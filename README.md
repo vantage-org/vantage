@@ -33,17 +33,17 @@ Runs the Docker app built using `vantage app:build`.
 
 ## Plugins
 
-There is a bare minimum feature set baked into the vantage script itself. The majority of the features come from the plugin system. Some plugins (like `vantage app:*`) come with vantage, pre-installed. Some you can download and use. You can also build your own, to customise vantage for your specific project (take a look at the [https://github.com/WilliamMayor/vantage/tree/master/dogfood](dogfood) scripts to see how vantage is customised to develop vantage).
+There is a bare minimum feature set baked into the vantage script itself. The majority of the features come from the plugin system. Some plugins (like `vantage app:*`) come with vantage, pre-installed. Some you can download and use. You can also build your own, to customise vantage for your specific project (take a look at the [dogfood](https://github.com/WilliamMayor/vantage/tree/master/dogfood) scripts to see how vantage is customised to develop vantage).
 
 Plugins are directories with scripts inside. To find plugin directories vantage looks inside `/usr/local/vantage/plugins` then every directory listed in the `VG_PLUGIN_PATH` environment variable. Script files have the following names and meanings:
 
     commands
 
-These are the main commands run by this plugin. The standard functionality. The builtin [https://github.com/WilliamMayor/vantage/tree/master/plugins/app](app) plugin uses `commands` to run some really simple Docker commands.
+These are the main commands run by this plugin. The standard functionality. The builtin [app](https://github.com/WilliamMayor/vantage/tree/master/plugins/app) plugin uses `commands` to run some really simple Docker commands.
 
     override
 
-Commands can be overridden by adding them to an `override` script. Only one override command will be run, no `pre` or `post` scripts, and certainly no `command`. Our [https://github.com/WilliamMayor/vantage/tree/master/dogfood](dogfood) plugins uses this feature to replace the standard `app:run` with an interactive version that calls `docker run -it`.
+Commands can be overridden by adding them to an `override` script. Only one override command will be run, no `pre` or `post` scripts, and certainly no `command`. Our [dogfood](https://github.com/WilliamMayor/vantage/tree/master/dogfood) plugins uses this feature to replace the standard `app:run` with an interactive version that calls `docker run -it`.
 
     pre
 
