@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -eo pipefail
+shopt -s nullglob
+
+for arg in "$@"; do
+    case "$arg" in
+        --commit|-c)
+            export VANTAGE_COMMIT=1
+            ;;
+    esac
+done
+
+case "$1" in
+    app:build)
+        if [ -z ${VG_APP_DIR+x} ]; then echo "VG_APP_DIR is not set"; exit 1 ; fi
+        docker build -t vg_app "$VG_APP_DIR"
+        exit $VG_VALID_EXIT
+        ;;
+    app:run)
+        docker run vg_app
+        exit $VG_VALID_EXIT
+        ;;
+    help | app:help | '')
+        echo "    app:build - Build your app"
+        echo "    app:run - Spin up your app"
+        ;;
+    *)
+        exit $VG_NOT_IMPLEMENTED_EXIT
+        ;;
+esac
