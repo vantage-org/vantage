@@ -11,9 +11,20 @@ for arg in "$@"; do
 done
 
 case "$1" in
-  help | app:help)
-    cat && cat<<EOF
-    app:up - Spin up your app
-EOF
-    ;;
+    app:build)
+        if [ -z ${VG_APP_DIR+x} ]; then echo "VG_APP_DIR is not set"; exit 1 ; fi
+        docker build -t vg_app "$VG_APP_DIR"
+        exit $VG_VALID_EXIT
+        ;;
+    app:run)
+        docker run vg_app
+        exit $VG_VALID_EXIT
+        ;;
+    help | app:help | '')
+        echo "    app:build - Build your app"
+        echo "    app:run - Spin up your app"
+        ;;
+    *)
+        exit $VG_NOT_IMPLEMENTED_EXIT
+        ;;
 esac

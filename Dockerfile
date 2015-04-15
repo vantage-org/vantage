@@ -2,7 +2,7 @@ FROM ubuntu
 
 RUN apt-get -y update &&\
     apt-get -y dist-upgrade &&\
-    apt-get -y install build-essential wget
+    apt-get -y install build-essential wget git
 
 ADD . /vantage
 WORKDIR /vantage

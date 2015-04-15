@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -eo pipefail
+shopt -s nullglob
+
+case "$1" in
+    app:run)
+        docker run -it vg_app
+        exit $VG_VALID_EXIT
+        ;;
+    help | app:help | '')
+        echo "    app:run - (override) Run an interactive shell"
+        ;;
+    *)
+        exit $VG_NOT_IMPLEMENTED_EXIT
+        ;;
+esac
