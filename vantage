@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -eo pipefail
+shopt -s nullglob
+
+export PLUGIN_PATH=${PLUGIN_PATH:="/usr/local/vantage/plugins"}
+
+case "$1" in
+    update)
+        cd /usr/local/vantage > /dev/null
+        git fetch --all
+        git reset --hard origin/master
+        cd - > /dev/null
+        exit 0
+        ;;
+    help|'')
+        echo "Usage: vantage [--env ENV_FILE [...]] COMMAND [OPTIONS]"
+        echo ""
+        echo "Commands:"
+        cat<<EOF | pluginhook commands help | sort
+    help - Print the list of commands
+    update - Update vantage using git
+EOF
+        exit 0
+        ;;
+esac

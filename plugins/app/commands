@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -eo pipefail
+shopt -s nullglob
+
+for arg in "$@"; do
+    case "$arg" in
+        --commit|-c)
+            export VANTAGE_COMMIT=1
+            ;;
+    esac
+done
+
+case "$1" in
+  help | app:help)
+    cat && cat<<EOF
+    app:up - Spin up your app
+EOF
+    ;;
+esac
