@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-set -eo pipefail
-shopt -s nullglob
+set -e
 
 rm -rf /usr/local/vantage
 git clone https://github.com/WilliamMayor/vantage.git /usr/local/vantage
