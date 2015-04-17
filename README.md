@@ -5,6 +5,10 @@ Command line shortcuts for managing Docker containers during development.
 
     wget -qO- https://raw.githubusercontent.com/WilliamMayor/vantage/master/bootstrap.sh | sh
 
+`vantage` is downloaded and updated using git, so you'll need that installed before the bootstrap script will work.
+
+You'll probably want Docker installed too.
+
 ## Motivation
 
 I'm getting more and more into Docker and I'm learning how to apply it to my workflow. I particularly love how it enables me to treat services as transient. I can spin up a DB, make some stupid data inside it, then simply destroy the entire thing 5 mins later. Want to see what happens to the app if the DB gets corrupted? Try it, find out. Want to see what kind of destructive scripting is possible using your API? Go for it.
@@ -13,42 +17,95 @@ With this in mind I've been juggling some complicated spin up scripts. I have to
 
 What I want (and what I'm trying to build) is a tool for easily creating, destroying, and managing Docker containers whilst I'm developing my app.
 
-## Current Builtin Functionality
+## Quick Tour
 
-    vantage help
+Here's a quick tour of installing and using `vantage`. I use Vagrant, so some of the paths are Vagrant-box specific.
 
-Display the help page, including the help listings for any installed plugins.
+First, run the bootstrap script to install `vantage` into `/usr/local/vantage`. During installation symlinks to the script are placed in `/usr/local/bin`. Then set some environment variables so `vantage` knows where to find things. `VG_PLUGIN_PATH` is treated a bit like `PATH` in that you can add multiple locations to it, separating each with  a `:`. `vantage` comes with some plugins already, more can be downloaded and you are encouraged to build your own, project-specific, ones too. `VG_APP_DIR` is used by `vantage app build` to find your project and build its Docker container.
 
-    vantage update
+    $ wget -qO- https://raw.githubusercontent.com/WilliamMayor/vantage/master/bootstrap.sh | sh
+    ...
+    $ export VG_PLUGIN_PATH=/vagrant/vantage:/usr/local/vantage-other
+    $ export VG_APP_DIR=/vagrant
 
-Use git to update vantage from GitHub.
+Let's explore what's possible:
 
-    vantage app:build
+    $ vg help
+    Usage: vantage [--env|-e ENV_FILE [...]] COMMAND [OPTIONS]
 
-Builds the Docker app found at `VG_APP_DIR`, gives it a tag of `vg_app`. For example `VG_APP_DIR=/vagrant vantage app:build` is the same (as long as there are no overrides) as `docker build -t vg_app $VG_APP_DIR`
+    Commands:
+        help - Print the list of commands
+        app build - Build your app
+        app run - Spin up your app
+        update - Update vantage
 
-    vantage app:run
+We can build our project using:
 
-Runs the Docker app built using `vantage app:build`.
+    $ vg app build
+    Sending build context to Docker daemon 145.4 kB
+    ...
+    Successfully built 6c66dbcb2f61
 
-## Plugins
+Then run it:
 
-There is a bare minimum feature set baked into the vantage script itself. The majority of the features come from the plugin system. Some plugins (like `vantage app:*`) come with vantage, pre-installed. Some you can download and use. You can also build your own, to customise vantage for your specific project (take a look at the [dogfood](https://github.com/WilliamMayor/vantage/tree/master/dogfood) scripts to see how vantage is customised to develop vantage).
+    $ vg app run
+    Hello, world!
 
-Plugins are directories with scripts inside. To find plugin directories vantage looks inside `/usr/local/vantage/plugins` then every directory listed in the `VG_PLUGIN_PATH` environment variable. Script files have the following names and meanings:
+Now let's run the app using a different environment:
 
-    commands
+    $ vim .env
+    NAME=Helen
+    $ vg --env .env app run
+    Hello, Helen!
 
-These are the main commands run by this plugin. The standard functionality. The builtin [app](https://github.com/WilliamMayor/vantage/tree/master/plugins/app) plugin uses `commands` to run some really simple Docker commands.
+We can set that env file to be the default one:
 
-    override
+    $ export VG_DEFAULT_ENV=/vagrant/.env
+    $ vg app run
+    Hello, Helen!
 
-Commands can be overridden by adding them to an `override` script. Only one override command will be run, no `pre` or `post` scripts, and certainly no `command`. Our [dogfood](https://github.com/WilliamMayor/vantage/tree/master/dogfood) plugins uses this feature to replace the standard `app:run` with an interactive version that calls `docker run -it`.
+And then combine our default env with a different one:
 
-    pre
+    $ vim .other_env
+    GREETING=Salut
+    $ vg --env .other_env app run
+    Salut, Helen!
 
-Commands in here will run before the standard command. This could be used to initialise dependencies before running a container.
+The functionality's a little bare, let's add our own plugin:
 
-    post
+    $ mkdir -p /vagrnat/vantage/app
+    $ vim /vagrant/vantage/app/override
+    #!/usr/bin/env bash
+    set -eo pipefail
+    shopt -s nullglob
 
-Commands here will be run after the standard command. This could be used to teardown a finished environment, or to add some extra build steps after the standard build has finished.
+    case "$1" in
+        run)
+            docker run \
+                --env-file "$VG_ENV_FILE" \
+                --interactive \
+                --tty \
+                vg_app bash
+            exit $VG_VALID_EXIT
+            ;;
+        help)
+            echo "    app run - (override) Run an interactive shell"
+            ;;
+        *)
+            exit $VG_NOT_IMPLEMENTED_EXIT
+            ;;
+    esac
+    $ chmod +x /vagrant/vantage/app/override
+    $ vg help
+    Usage: vantage [--env|-e ENV_FILE [...]] COMMAND [OPTIONS]
+
+    Commands:
+        help - Print the list of commands
+        app build - Build your app
+        app run - Spin up your app
+        update - Update vantage
+        app run - (override) Run an interactive shell
+    $ vg app run
+    root@08e51e548957:/usr/src/app# ...
+
+We created an override script this time, it replaced the previous `vg app run` command. We can also create `pre`, `post`, and `commands` scripts (or combinations of those) to customise our plugins.
