@@ -6,78 +6,76 @@ export VG_PLUGIN_PATH=/usr/local/vantage/plugins:"$VG_PLUGIN_PATH"
 export VG_NOT_IMPLEMENTED_EXIT=10
 export VG_VALID_EXIT=0
 
+if [ -z "$VG_ENV_FILE" ]; then
+    export VG_ENV_FILE=$(mktemp)
+    if [ -f "$VG_DEFAULT_ENV" ]; then
+        cat "$VG_DEFAULT_ENV" >> "$VG_ENV_FILE"
+    fi
+    while : ; do
+        if [ "$1" == "--env" ] || [ "$1" == "-e" ]; then
+            cat "$2" >> "$VG_ENV_FILE"
+            shift 2
+        else
+            break
+        fi
+    done
+fi
+
+function run_all {
+    paths=$1
+    cmd=$2
+    stage=$3
+    shift 3
+    for path in $paths; do
+        for script in "$path"/$cmd/$stage; do
+            if [ ! -f "$script" ]; then
+                continue
+            fi
+            set +e; $script "$@"; exit_code=$?; set -e
+            if [[ "$exit_code" -eq "$VG_NOT_IMPLEMENTED_EXIT" ]]; then
+                continue
+            fi
+            implemented=1
+            if [[ "$exit_code" -ne "$VG_VALID_EXIT" ]]; then
+                exit $exit_code
+            fi
+        done
+    done
+}
+
 function find_and_run {
     paths=$(echo "$VG_PLUGIN_PATH" | tr ':' '\n')
+    cmd=$1
+    shift 1
     implemented=0
-    
-    for path in $paths; do
-        for script in "$path"/*/override; do
-            set +e; $script "$@"; exit_code=$?; set -e
-            if [[ "$exit_code" -eq "$VG_NOT_IMPLEMENTED_EXIT" ]]; then
-                continue
-            fi
-            implemented=1
-            if [ -z ${VG_OVERRIDE_CONTINUE+x} ]; then exit $exit_code; fi
-        done
-    done
-    for path in $paths; do
-        for script in "$path"/*/pre; do
-            set +e; $script "$@"; set -e
-            if [[ "$exit_code" -eq "$VG_NOT_IMPLEMENTED_EXIT" ]]; then
-                continue
-            fi
-            implemented=1
-            if [[ "$exit_code" -ne "$VG_VALID_EXIT" ]]; then
-                exit $exit_code
-            fi
-        done
-    done
-    for path in $paths; do
-        for script in "$path"/*/commands; do
-            set +e; $script "$@"; exit_code=$?; set -e
-            if [[ "$exit_code" -eq "$VG_NOT_IMPLEMENTED_EXIT" ]]; then
-                continue
-            fi
-            implemented=1
-            if [[ "$exit_code" -ne "$VG_VALID_EXIT" ]]; then
-                exit $exit_code
-            fi
-        done
-    done
-    for path in $paths; do
-        for script in "$path"/*/post; do
-            set +e; $script "$@"; set -e
-            if [[ "$exit_code" -eq "$VG_NOT_IMPLEMENTED_EXIT" ]]; then
-                continue
-            fi
-            implemented=1
-            if [[ "$exit_code" -ne "$VG_VALID_EXIT" ]]; then
-                exit $exit_code
-            fi
-        done
-    done
-    if [[ "$implemented" -eq 0 ]]; then
-        echo "Command not found"
+    if [ -z "$cmd" ]; then cmd="help"; fi
+    run_all "$paths" "$cmd" override $@
+    if [ "$implemented" -ne 0 ] && [ -z $VG_OVERRIDE_CONTINUE ]; then exit $?; fi
+    run_all "$paths" "$cmd" pre $@
+    run_all "$paths" "$cmd" commands $@
+    run_all "$paths" "$cmd" post $@
+    if [ "$implemented" -eq 0 ]; then
+        echo "vantage: Command not found"
+        vg help
         exit 1
     fi
 }
 
+function show_help {
+    for path in $(echo "$VG_PLUGIN_PATH" | tr ':' '\n'); do
+        for script in "$path"/*/*; do
+            set +e; $script help; set -e
+        done
+    done
+}
+
 case "$1" in
-    update)
-        cd /usr/local/vantage > /dev/null
-        git fetch --all
-        git reset --hard origin/master
-        cd - > /dev/null
-        exit 0
-        ;;
     help|'')
-        echo "Usage: vantage COMMAND [OPTIONS]"
+        echo "Usage: vantage [--env|-e ENV_FILE [...]] COMMAND [OPTIONS]"
         echo ""
         echo "Commands:"
         echo "    help - Print the list of commands"
-        echo "    update - Update vantage using git"
-        export VG_OVERRIDE_CONTINUE=1
-        find_and_run $@
+        show_help
         ;;
     *)
         find_and_run $@
