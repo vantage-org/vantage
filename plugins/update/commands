@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -eo pipefail
+shopt -s nullglob
+
+function git_update {
+    cd "$1" > /dev/null
+    git fetch --all
+    git reset --hard origin/master
+}
+
+case "$1" in
+    '')
+        git_update /usr/local/vantage
+        exit $VG_VALID_EXIT
+        ;;
+    help)
+        echo "    update - Update vantage"
+        ;;
+    *)
+        exit $VG_NOT_IMPLEMENTED_EXIT
+        ;;
+esac
