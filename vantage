@@ -37,7 +37,7 @@ function run_all {
             fi
             implemented=1
             if [[ "$exit_code" -ne "$VG_VALID_EXIT" ]]; then
-                exit $exit_code
+                return $exit_code
             fi
         done
     done
@@ -53,11 +53,15 @@ function find_and_run {
     if [ "$implemented" -ne 0 ] && [ -z $VG_OVERRIDE_CONTINUE ]; then exit $?; fi
     run_all "$paths" "$cmd" pre $@
     run_all "$paths" "$cmd" commands $@
+    exit_code=$?
     run_all "$paths" "$cmd" post $@
     if [ "$implemented" -eq 0 ]; then
         echo "vantage: Command not found"
         vg help
         exit 1
+    fi
+    if [[ "$exit_code" -ne "$VG_VALID_EXIT" ]]; then
+        exit $exit_code
     fi
 }
 
