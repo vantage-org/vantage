@@ -11,10 +11,13 @@ function git_update {
 case "$1" in
     '')
         git_update /usr/local/vantage
+        for path in $(ls /usr/local/vantage/installed); do
+            git_update "/usr/local/vantage/installed/$path"
+        done
         exit $VG_VALID_EXIT
         ;;
     help)
-        echo "    update - Update vantage"
+        echo "    update - Update vantage and all plugins"
         ;;
     *)
         exit $VG_NOT_IMPLEMENTED_EXIT

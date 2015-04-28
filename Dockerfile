@@ -11,4 +11,6 @@ RUN wget -qO- https://get.docker.com/ | sh
 ADD . /usr/local/vantage
 WORKDIR /usr/local/vantage
 
+ENV VG_APP_DIR /usr/local/vantage
+
 CMD ["bash"]

@@ -1,7 +1,7 @@
 $script = <<SCRIPT
     locale-gen en_GB.UTF-8
     apt-get --assume-yes update
-    apt-get --assume-yes upgrade
+    apt-get --assume-yes dist-upgrade
 
     wget -qO- https://get.docker.com/ | sh
     usermod -aG docker vagrant

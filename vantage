@@ -11,7 +11,7 @@ if [ -z "$VG_PLUGIN_PATH" ]; then
     echo "vantage: You haven't set a VG_PLUGIN_PATH"
 fi
 
-export VG_PLUGIN_PATH=/usr/local/vantage/plugins:"$VG_PLUGIN_PATH"
+export VG_PLUGIN_PATH=/usr/local/vantage/plugins:/usr/local/vantage/installed:"$VG_PLUGIN_PATH"
 export VG_NOT_IMPLEMENTED_EXIT=10
 export VG_VALID_EXIT=0
 
