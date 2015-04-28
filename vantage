@@ -95,5 +95,3 @@ case "$1" in
     *)
         find_and_run $@
 esac
-
-rm "$VG_ENV_FILE"
