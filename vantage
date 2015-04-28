@@ -2,6 +2,15 @@
 set -eo pipefail
 shopt -s nullglob
 
+if [ -z "$VG_APP_DIR" ]; then
+    echo "vantage: You must set your VG_APP_DIR"
+    exit 1
+fi
+
+if [ -z "$VG_PLUGIN_PATH" ]; then
+    echo "vantage: You haven't set a VG_PLUGIN_PATH"
+fi
+
 export VG_PLUGIN_PATH=/usr/local/vantage/plugins:"$VG_PLUGIN_PATH"
 export VG_NOT_IMPLEMENTED_EXIT=10
 export VG_VALID_EXIT=0
