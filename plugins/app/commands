@@ -16,6 +16,16 @@ case "$1" in
             vg_app
         exit $VG_VALID_EXIT
         ;;
+    shell)
+        docker run \
+            --env-file "$VG_ENV_FILE" \
+            --interactive \
+            --tty \
+            --rm \
+            --net=host \
+            vg_app bash
+        exit $VG_VALID_EXIT
+        ;;
     help)
         echo "    app build - Build your app"
         echo "    app run - Spin up your app"
