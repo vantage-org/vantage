@@ -48,9 +48,8 @@ function find_and_run {
     cmd=$1
     shift 1
     implemented=0
-    if [ -z "$cmd" ]; then cmd="help"; fi
     run_all "$paths" "$cmd" override $@
-    if [ "$implemented" -ne 0 ] && [ -z $VG_OVERRIDE_CONTINUE ]; then exit $?; fi
+    if [ "$implemented" -ne 0 ]; then exit $?; fi
     run_all "$paths" "$cmd" pre $@
     run_all "$paths" "$cmd" commands $@
     exit_code=$?
@@ -67,8 +66,11 @@ function find_and_run {
 
 function show_help {
     for path in $(echo "$VG_PLUGIN_PATH" | tr ':' '\n'); do
-        for script in "$path"/*/*; do
-            set +e; $script help; set -e
+        for plugin in "$path"/*; do
+            set +e; $plugin/override help 2> /dev/null; set -e
+            set +e; $plugin/pre help 2> /dev/null; set -e
+            set +e; $plugin/commands help 2> /dev/null; set -e
+            set +e; $plugin/post help 2> /dev/null; set -e
         done
     done
 }
@@ -78,8 +80,8 @@ case "$1" in
         echo "Usage: vantage [--env|-e ENV_FILE [...]] COMMAND [OPTIONS]"
         echo ""
         echo "Commands:"
-        echo "    help - Print the list of commands"
-        show_help
+        echo "    help - Print this list of commands"
+        show_help | sort
         ;;
     *)
         find_and_run $@
