@@ -11,7 +11,7 @@ if [ -z "$VG_PLUGIN_PATH" ]; then
     echo "vantage: You haven't set a VG_PLUGIN_PATH"
 fi
 
-export VG_PLUGIN_PATH=/usr/local/vantage/plugins:/usr/local/vantage/installed:"$VG_PLUGIN_PATH"
+export VG_INTERNAL_PLUGIN_PATH=/usr/local/vantage/plugins:/usr/local/vantage/installed:"$VG_PLUGIN_PATH"
 export VG_NOT_IMPLEMENTED_EXIT=10
 export VG_VALID_EXIT=0
 
@@ -31,29 +31,28 @@ if [ -z "$VG_ENV_FILE" ]; then
 fi
 
 function run_all {
-    paths=$1
-    cmd=$2
-    stage=$3
+    paths="$1"
+    cmd="$2"
+    stage="$3"
     shift 3
     for path in $paths; do
-        for script in "$path"/$cmd/$stage; do
-            if [ ! -f "$script" ]; then
-                continue
-            fi
-            set +e; $script "$@"; exit_code=$?; set -e
-            if [[ "$exit_code" -eq "$VG_NOT_IMPLEMENTED_EXIT" ]]; then
-                continue
-            fi
-            implemented=1
-            if [[ "$exit_code" -ne "$VG_VALID_EXIT" ]]; then
-                return $exit_code
-            fi
-        done
+        script="$path/$cmd/$stage"
+        if [ ! -f "$script" ]; then
+            continue
+        fi
+        set +e; "$script" "$@"; exit_code=$?; set -e
+        if [[ "$exit_code" -eq "$VG_NOT_IMPLEMENTED_EXIT" ]]; then
+            continue
+        fi
+        implemented=1
+        if [[ "$exit_code" -ne "$VG_VALID_EXIT" ]]; then
+            return "$exit_code"
+        fi
     done
 }
 
 function find_and_run {
-    paths=$(echo "$VG_PLUGIN_PATH" | tr ':' '\n')
+    paths=$(echo "$VG_INTERNAL_PLUGIN_PATH" | tr ':' '\n')
     cmd=$1
     shift 1
     implemented=0
@@ -65,7 +64,7 @@ function find_and_run {
     run_all "$paths" "$cmd" post $@
     if [ "$implemented" -eq 0 ]; then
         echo "vantage: Command not found"
-        vg help
+        vantage help
         exit 1
     fi
     if [[ "$exit_code" -ne "$VG_VALID_EXIT" ]]; then
@@ -74,12 +73,12 @@ function find_and_run {
 }
 
 function show_help {
-    for path in $(echo "$VG_PLUGIN_PATH" | tr ':' '\n'); do
+    for path in $(echo "$VG_INTERNAL_PLUGIN_PATH" | tr ':' '\n'); do
         for plugin in "$path"/*; do
-            set +e; $plugin/override help 2> /dev/null; set -e
-            set +e; $plugin/pre help 2> /dev/null; set -e
-            set +e; $plugin/commands help 2> /dev/null; set -e
-            set +e; $plugin/post help 2> /dev/null; set -e
+            set +e; "$plugin/override" help 2> /dev/null; set -e
+            set +e; "$plugin/pre" help 2> /dev/null; set -e
+            set +e; "$plugin/commands" help 2> /dev/null; set -e
+            set +e; "$plugin/post" help 2> /dev/null; set -e
         done
     done
 }
@@ -94,4 +93,5 @@ case "$1" in
         ;;
     *)
         find_and_run $@
+        ;;
 esac

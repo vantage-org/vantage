@@ -24,6 +24,7 @@ case "$1" in
         ;;
     help)
         echo "    plugin install NAME|URL - Install this vantage plugin"
+        echo "    plugin install list|ls - List all installed plugins"
         ;;
     *)
         exit $VG_NOT_IMPLEMENTED_EXIT
