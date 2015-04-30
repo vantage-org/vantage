@@ -23,7 +23,10 @@ case "$1" in
             --tty \
             --rm \
             --net=host \
+            --name=vg_app_shell \
             vg_app bash
+        docker stop vg_app_shell &> /dev/null
+        docker rm vg_app_shell &> /dev/null
         exit $VG_VALID_EXIT
         ;;
     help)
