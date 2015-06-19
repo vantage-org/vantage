@@ -8,7 +8,7 @@ RUN apt-get -y update && \
 
 RUN wget -qO- https://get.docker.com/ | sh
 
-ADD . /usr/local/vantage
+VOLUME . /usr/local/vantage
 WORKDIR /usr/local/vantage
 
 ENV VG_APP_DIR /usr/local/vantage

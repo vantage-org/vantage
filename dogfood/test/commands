@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+export VG_TEST_PASSED=11
+export VG_TEST_FAILED=12
+
+function run {
+    path="$1"
+    test_case="${path/$VG_APP_DIR\/tests\//}"
+    output=$("$path/run.sh")
+    code=$?
+    report="OK"
+    if [ $code -ne $VG_TEST_PASSED ]; then
+        report="FAIL"
+    fi
+    echo "$test_case"...$report
+    if [ $code -ne $VG_TEST_PASSED ]; then
+        echo "$output"
+    fi
+}
+
+case "$1" in
+    '')
+        for path in "$VG_APP_DIR/tests/"*; do
+            run "$path"
+        done
+        exit $VG_VALID_EXIT
+        ;;
+    help)
+        echo "    app test [CASE] - Run test(s)"
+        ;;
+    *)
+        run "$1"
+        exit $VG_VALID_EXIT
+        ;;
+esac
