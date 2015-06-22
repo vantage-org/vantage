@@ -1,12 +1,4 @@
-#!/usr/bin/env bash
-set -eo pipefail
-shopt -s nullglob
-
-function git_update {
-    cd "$1" > /dev/null
-    git fetch --all
-    git reset --hard origin/master
-}
+#! /usr/bin/env bash
 
 case "$1" in
     install)
@@ -23,8 +15,8 @@ case "$1" in
         ls -1 /usr/local/vantage/installed
         ;;
     help)
-        echo "    plugin install NAME|URL - Install this vantage plugin"
-        echo "    plugin install list|ls - List all installed plugins"
+        echo "    plugins install NAME|URL - Install this vantage plugin"
+        echo "    plugins install list|ls - List all installed plugins"
         ;;
     *)
         exit $VG_NOT_IMPLEMENTED_EXIT

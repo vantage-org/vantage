@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+case "$1" in
+    get|'')
+        output=$(cat "$VG_ENV_FILE")
+        if [[ ! -z "$2" ]]; then
+            output=$(echo "$output" | grep "$2=" | tail -1)
+            output=${output/$2=/}
+        fi
+        echo "$output" | grep -v '^$'
+        exit $VG_VALID_EXIT
+        ;;
+    set)
+        shift 1
+        should_save=0
+        if [ "$1" == "--save" ] || [ "$1" == "-s" ]; then
+            shift 1
+            if [[ -z "$VG_PRIMARY_ENV" ]]; then
+                >&2 echo "vantage: config: save: No default or provided env"
+            else
+                should_save=1
+            fi
+        fi
+        while (( "$#" )); do
+            if [[ ! -z "$VG_PARENT_ENV_FILE" ]]; then
+                echo "$1" >> "$VG_PARENT_ENV_FILE"
+            fi
+            if [[ $should_save -eq 1 ]]; then
+                echo "$1" >> "$VG_PRIMARY_ENV"
+            fi
+            shift 1
+        done
+        echo "=$VG_PARENT_ENV_FILE="
+        exit $VG_VALID_EXIT
+        ;;
+    file)
+        echo "$VG_ENV_FILE"
+        exit $VG_VALID_EXIT
+        ;;
+    help)
+        echo "    config get [VAR] - Print the vantage env"
+        echo "    config set [--save] VAR=VALUE - Set an env value"
+        exit $VG_VALID_EXIT
+        ;;
+    *)
+        exit $VG_NOT_IMPLEMENTED_EXIT
+        ;;
+esac

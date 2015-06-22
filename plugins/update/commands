@@ -1,9 +1,7 @@
-#!/usr/bin/env bash
-set -eo pipefail
-shopt -s nullglob
+#! /usr/bin/env bash
 
 function git_update {
-    cd "$1" > /dev/null
+    cd "$1"
     git fetch --all
     git reset --hard origin/master
 }
@@ -11,7 +9,7 @@ function git_update {
 case "$1" in
     '')
         git_update /usr/local/vantage
-        for path in $(ls /usr/local/vantage/installed); do
+        for path in /usr/local/vantage/installed/*; do
             git_update "/usr/local/vantage/installed/$path"
         done
         exit $VG_VALID_EXIT

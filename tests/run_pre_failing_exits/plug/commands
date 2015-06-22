@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+case "$1" in
+    run)
+        echo "commands"
+        exit $VG_VALID_EXIT
+        ;;
+    *)
+        exit $VG_NOT_IMPLEMENTED_EXIT
+        ;;
+esac

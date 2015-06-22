@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+export VG_TEST_PASSED=11
+export VG_TEST_FAILED=12
+
+function run {
+    path="$1"
+    test_case=$(basename "$path")
+    output=$("$path/run.sh")
+    code=$?
+    output="    "${output//$'\n'/$'\n'"    "}
+    report="\033[0;32mOK\033[0m"
+    if [ $code -ne $VG_TEST_PASSED ]; then
+        report="\033[0;31mFAIL\033[0m"
+    fi
+    echo -e "  $test_case"...$report
+    if [ $code -ne $VG_TEST_PASSED ]; then
+        echo "$output"
+    fi
+}
+
+case "$1" in
+    '')
+        env_file="$VG_ENV_FILE"
+        unset VG_ENV_FILE
+        echo "$VG_APP_DIR/tests:"
+        for path in "$VG_APP_DIR/tests/"*; do
+            run "$path"
+        done
+        plugin_paths=$(echo "$VG_INTERNAL_PLUGIN_PATH" | tr ':' '\n')
+        for plugin_path in $plugin_paths; do
+            for plugin in "$plugin_path/"*; do
+                if [[ -d "$plugin/tests" ]]; then
+                    echo "$plugin/tests:"
+                    for test in "$plugin/tests/"*; do
+                        run "$test"
+                    done
+                fi
+            done
+        done
+        export VG_ENV_FILE="$env_file"
+        exit $VG_VALID_EXIT
+        ;;
+    help)
+        exit $VG_VALID_EXIT
+        ;;
+    *)
+        for path in $@; do
+            run "$path"
+        done
+        exit $VG_VALID_EXIT
+        ;;
+esac

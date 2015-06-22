@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-set -eo pipefail
-shopt -s nullglob
+
+
+function clean {
+    if [ ! -z "$VG_ENV_FILE" ]; then
+        rm -f "$VG_ENV_FILE"
+    fi
+}
+trap clean EXIT
 
 if [ -z "$VG_APP_DIR" ]; then
     echo "vantage: You must set your VG_APP_DIR"
@@ -14,21 +20,30 @@ fi
 export VG_INTERNAL_PLUGIN_PATH=/usr/local/vantage/plugins:/usr/local/vantage/installed:"$VG_PLUGIN_PATH"
 export VG_NOT_IMPLEMENTED_EXIT=10
 export VG_VALID_EXIT=0
+export VG_BUILD_PREFIX=${VG_BUILD_PREFIX:-vantage}
+export VG_RUN_PREFIX=${VG_RUN_PREFIX:-vg}
 
 if [ -z "$VG_ENV_FILE" ]; then
     export VG_ENV_FILE=$(mktemp)
     if [ -f "$VG_DEFAULT_ENV" ]; then
         cat "$VG_DEFAULT_ENV" >> "$VG_ENV_FILE"
+        export VG_PRIMARY_ENV="$VG_DEFAULT_ENV"
     fi
-    while : ; do
-        if [ "$1" == "--env" ] || [ "$1" == "-e" ]; then
-            cat "$2" >> "$VG_ENV_FILE"
-            shift 2
-        else
-            break
-        fi
-    done
+else
+    export VG_PARENT_ENV_FILE="$VG_ENV_FILE"
+    export VG_ENV_FILE=$(mktemp)
+    cat "$VG_PARENT_ENV_FILE" >> "$VG_ENV_FILE"
 fi
+
+while : ; do
+    if [ "$1" == "--env" ] || [ "$1" == "-e" ]; then
+        echo "" | cat - "$2" >> "$VG_ENV_FILE"
+        export VG_PRIMARY_ENV="$2"
+        shift 2
+    else
+        break
+    fi
+done
 
 function run_all {
     paths="$1"
@@ -40,7 +55,7 @@ function run_all {
         if [ ! -f "$script" ]; then
             continue
         fi
-        set +e; "$script" "$@"; exit_code=$?; set -e
+        "$script" "$@"; exit_code=$?
         if [[ "$exit_code" -eq "$VG_NOT_IMPLEMENTED_EXIT" ]]; then
             continue
         fi
@@ -53,32 +68,27 @@ function run_all {
 
 function find_and_run {
     paths=$(echo "$VG_INTERNAL_PLUGIN_PATH" | tr ':' '\n')
-    cmd=$1
-    shift 1
+    cmd="$1"; shift 1
     implemented=0
-    run_all "$paths" "$cmd" override $@
-    if [ "$implemented" -ne 0 ]; then exit $?; fi
-    run_all "$paths" "$cmd" pre $@
-    run_all "$paths" "$cmd" commands $@
-    exit_code=$?
-    run_all "$paths" "$cmd" post $@
+    run_all "$paths" "$cmd" pre $@; exit_code=$?
+    if [[ "$exit_code" -eq "$VG_VALID_EXIT" ]]; then
+        run_all "$paths" "$cmd" commands $@; exit_code=$?
+        run_all "$paths" "$cmd" post $@
+    fi
     if [ "$implemented" -eq 0 ]; then
-        echo "vantage: Command not found"
+        echo "vantage: $cmd: Command not found"
         vantage help
-        exit 1
+        exit_code=1
     fi
-    if [[ "$exit_code" -ne "$VG_VALID_EXIT" ]]; then
-        exit $exit_code
-    fi
+    exit $exit_code
 }
 
 function show_help {
     for path in $(echo "$VG_INTERNAL_PLUGIN_PATH" | tr ':' '\n'); do
         for plugin in "$path"/*; do
-            set +e; "$plugin/override" help 2> /dev/null; set -e
-            set +e; "$plugin/pre" help 2> /dev/null; set -e
-            set +e; "$plugin/commands" help 2> /dev/null; set -e
-            set +e; "$plugin/post" help 2> /dev/null; set -e
+            "$plugin/pre" help 2> /dev/null
+            "$plugin/commands" help 2> /dev/null
+            "$plugin/post" help 2> /dev/null
         done
     done
 }
