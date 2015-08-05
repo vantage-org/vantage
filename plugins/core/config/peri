@@ -5,5 +5,5 @@ switch (count $argv)
     case '1'
         echo "$$argv[1]"
     case '*'
-        echo "set"
+        echo "$argv[1]=$argv[2..-1]" >> "$VG_APP_DIR/.vantage"
 end
