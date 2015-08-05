@@ -1,0 +1,22 @@
+#! /usr/bin/env fish
+
+set d_update (dirname (status --current-filename))
+set d_core (dirname "$d_update")
+set d_plugins (dirname "$d_core")
+
+switch "$argv[1]"
+    case 'list' 'ls'
+        ls -1 "$d_plugins/installed"
+    case 'install' 'add'
+        set name "$argv[2]"
+        if test "$name" != "http?://*"
+            set name "https://github.com/vantage-org/$name.git"
+        end
+        mkdir -p "$d_plugins/installed"
+        cd "$d_plugins/installed"
+        git clone "$name"
+    case 'uninstall' 'remove'
+        rm -rf "$d_plugins/installed/$argv[2]"
+    case 'update'
+        vantage update "$argv[2]"
+end
