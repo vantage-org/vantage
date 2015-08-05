@@ -1,0 +1,16 @@
+#! /usr/bin/env fish
+
+set d_update (dirname (status --current-filename))
+set d_core (dirname "$d_update")
+set d_plugins (dirname "$d_core")
+
+switch "$argv"
+    case '' 'vantage' 'vg'
+        set d (dirname "$d_plugins")
+    case '*'
+        set d "$d_plugins/installed/$argv"
+end
+
+cd "$d"
+git fetch --all
+git reset --hard origin/master
