@@ -1,0 +1,15 @@
+#!/usr/bin/env fish
+
+set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_APP_DIR/tests/run_peri_override/one" "$VG_APP_DIR/tests/run_peri_override/two"
+
+set o (vantage foo)
+
+test "$o" = "peri"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought plugin output should be peri, it was $o"
+end
+
+exit $s

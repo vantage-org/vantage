@@ -1,0 +1,9 @@
+#!/usr/bin/env fish
+switch (count $argv)
+    case '0'
+        set | grep --colour=NEVER "^VG_"
+    case '1'
+        echo "$$argv[1]"
+    case '*'
+        echo "set"
+end

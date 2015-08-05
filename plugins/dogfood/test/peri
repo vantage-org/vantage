@@ -1,0 +1,25 @@
+#!/usr/bin/env fish
+
+function run
+    set path "$argv"
+    set test_case (basename "$path")
+    set output (eval "$path/run")
+    set code $status
+    if test $status -eq 0
+        echo "$test_case OK"
+    else
+        echo "$test_case FAIL"
+        for o in $output
+            echo "$o"
+        end
+    end
+end
+
+switch "$argv"
+    case ''
+        for t in (ls "$VG_APP_DIR/tests/")
+            run "$VG_APP_DIR/tests/$t"
+        end
+    case '*'
+        run "$VG_APP_DIR/tests/$argv"
+end

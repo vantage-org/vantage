@@ -1,0 +1,15 @@
+#!/usr/bin/env fish
+
+echo "FOO=BAR" > "$VG_ENV_FILE"
+
+set o (vantage env FOO)
+
+test "$o" = "BAR"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought ENV variable FOO should be BAR, it was $o"
+end
+
+exit $s

@@ -1,0 +1,21 @@
+#!/usr/bin/env fish
+
+set --erase VG_APP_DIR
+
+set d (mktemp --directory)
+
+echo "FOO=BAR" > "$d/.vantage"
+
+set o (vantage --app "$d" config FOO)
+
+rm -rf "$d"
+
+test "$o" = "BAR"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought config variable FOO should be BAR, it was $o"
+end
+
+exit $s

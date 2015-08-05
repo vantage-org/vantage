@@ -1,0 +1,20 @@
+#!/usr/bin/env fish
+
+switch (count $argv)
+    case '0'
+        for line in (cat $VG_ENV_FILE)
+            set kv (split $line "=")
+            echo $kv[1] $kv[2..-1]
+        end
+    case '1'
+        for line in (cat $VG_ENV_FILE)
+            set kv (echo $line | tr "=" "\n")
+            if test "$kv[1]" = "$argv[1]"
+                echo $kv[2]
+                exit 0
+            end
+        end
+        exit 1
+    case '*'
+        echo "set"
+end

@@ -1,0 +1,15 @@
+#!/usr/bin/env fish
+
+set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_APP_DIR/tests/run_post/one" "$VG_APP_DIR/tests/run_post/two"
+
+set o (vantage foo)
+
+test "$o" = "post post"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought plugin output should be post post, it was $o"
+end
+
+exit $s

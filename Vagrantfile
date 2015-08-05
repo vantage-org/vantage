@@ -1,13 +1,11 @@
 $script = <<SCRIPT
     locale-gen en_GB.UTF-8
+    apt-add-repository ppa:fish-shell/release-2
     apt-get --assume-yes update
     apt-get --assume-yes dist-upgrade
+    apt-get --assume-yes install fish
+    chsh -s /usr/bin/fish vagrant
 
-    wget -qO- https://get.docker.com/ | sh
-    usermod -aG docker vagrant
-
-    echo "VG_PLUGIN_PATH=/vagrant/plugins:/vagrant/dogfood" >> /etc/environment
-    echo "VG_APP_DIR=/vagrant" >> /etc/environment
     ln -s /vagrant/vantage /usr/local/bin/vantage
     ln -s /vagrant/vantage /usr/local/bin/vg
 SCRIPT

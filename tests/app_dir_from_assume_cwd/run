@@ -1,0 +1,19 @@
+#!/usr/bin/env fish
+
+set --erase VG_APP_DIR
+
+
+cd /tmp
+vantage config VG_APP_DIR
+set o (vantage config VG_APP_DIR)
+cd -
+
+test "$o" = "/tmp"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought VG_APP_DIR should be /tmp, it was $o"
+end
+
+exit $s

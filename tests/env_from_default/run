@@ -1,0 +1,22 @@
+#!/usr/bin/env fish
+
+set --erase VG_APP_DIR
+set --erase VG_ENV_FILE
+
+set d (mktemp --directory)
+echo "FOO=BAR" > "$d/env"
+set --export --global VG_DEFAULT_ENV "$d/env"
+
+set o (vantage --app "$d" env FOO)
+
+rm -rf "$d"
+
+test "$o" = "BAR"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought ENV variable FOO should be BAR, it was $o"
+end
+
+exit $s

@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-case "$1" in
-    run)
-        exit 42
-        ;;
-    *)
-        exit $VG_NOT_IMPLEMENTED_EXIT
-        ;;
-esac

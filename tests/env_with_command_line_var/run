@@ -1,0 +1,27 @@
+#!/usr/bin/env fish
+
+set --erase VG_APP_DIR
+set --erase VG_ENV_FILE
+
+set o (vantage --var FOO=BAR env FOO)
+
+test "$o" = "BAR"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought ENV variable FOO should be BAR, it was $o"
+    exit $s
+end
+
+set o (vantage -v FOO=BAR env FOO)
+
+test "$o" = "BAR"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought ENV variable FOO should be BAR, it was $o"
+end
+
+exit $s
