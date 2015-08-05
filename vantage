@@ -141,30 +141,37 @@ end
 set pre_override 0
 set peri_override 0
 set post_override 0
-for p in $VG_PLUGIN_PATH
-    if test -d "$p/$cmd"
-        if test $pre_override -eq 0
-            if test -f "$p/$cmd/pre.override"
-                set pre "$p/$cmd/pre.override"
-                set pre_override 1
-            else if test -f "$p/$cmd/pre"
-                set pre $pre "$p/$cmd/pre"
-            end
+for path in $VG_PLUGIN_PATH
+    for plugin in (ls "$path")
+        if test -f "$path/$plugin/aliases"
+            set aliases (cat "$path/$plugin/aliases")
         end
-        if test $peri_override -eq 0
-            if test -f "$p/$cmd/peri.override"
-                set peri "$p/$cmd/peri.override"
-                set peri_override 1
-            else if test -f "$p/$cmd/peri"
-                set peri $peri "$p/$cmd/peri"
+        contains "$cmd" "$aliases"
+        if test $status -eq 0 -o "$plugin" = "$cmd"
+            set p "$path/$plugin"
+            if test $pre_override -eq 0
+                if test -f "$p/pre.override"
+                    set pre "$p/pre.override"
+                    set pre_override 1
+                else if test -f "$p/pre"
+                    set pre $pre "$p/pre"
+                end
             end
-        end
-        if test $post_override -eq 0
-            if test -f "$p/$cmd/post.override"
-                set post "$p/$cmd/post.override"
-                set post_override 1
-            else if test -f "$p/$cmd/post"
-                set post $post "$p/$cmd/post"
+            if test $peri_override -eq 0
+                if test -f "$p/peri.override"
+                    set peri "$p/peri.override"
+                    set peri_override 1
+                else if test -f "$p/peri"
+                    set peri $peri "$p/peri"
+                end
+            end
+            if test $post_override -eq 0
+                if test -f "$p/post.override"
+                    set post "$p/post.override"
+                    set post_override 1
+                else if test -f "$p/post"
+                    set post $post "$p/post"
+                end
             end
         end
     end
