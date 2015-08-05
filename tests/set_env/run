@@ -1,0 +1,18 @@
+#!/usr/bin/env fish
+
+set d (mktemp --directory)
+
+vantage --app "$d" env FOO BAR
+set o (vantage --app "$d" env FOO)
+
+rm -rf "$d"
+
+test "$o" = "BAR"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought the env variable FOO should be BAR, it was $o"
+end
+
+exit $s

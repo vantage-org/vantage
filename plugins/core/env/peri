@@ -16,5 +16,5 @@ switch (count $argv)
         end
         exit 1
     case '*'
-        echo "set"
+        echo "$argv[1]=$argv[2..-1]" >> "$VG_PARENT_ENV_FILE"
 end

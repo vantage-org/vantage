@@ -89,6 +89,7 @@ if test -n "$VG_ENV_FILE"
     # A parent env file exists, so we can use the parent as our starting env
     set temp_env_file (mktemp)
     cat "$VG_ENV_FILE" > "$temp_env_file"
+    set --export --global VG_PARENT_ENV_FILE "$VG_ENV_FILE"
     set --export --global VG_ENV_FILE "$temp_env_file"
 else
     # We are the parent process so we have to build the starting env
