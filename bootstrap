@@ -1,10 +1,12 @@
+#!/bin/sh
 set -e
 
 echo "Removing any existing vantage installations..."
 rm -rf /usr/local/vantage
 
 echo "Cloning vantage into /usr/local/vantage..."
-git clone https://github.com/vantage-org/vantage.git /usr/local/vantage &> /dev/null
+git clone https://github.com/vantage-org/vantage.git /usr/local/vantage
+mkdir -p /usr/local/vantage/plugins/installed
 
 echo "Linking script to /usr/local/bin/..."
 ln -s /usr/local/vantage/vantage /usr/local/bin/vantage
