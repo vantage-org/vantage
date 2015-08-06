@@ -1,17 +1,13 @@
-#! /usr/bin/env fish
+set -e
 
 echo "Removing any existing vantage installations..."
 rm -rf /usr/local/vantage
-if not $status; exit 1; end
 
 echo "Cloning vantage into /usr/local/vantage..."
 git clone https://github.com/vantage-org/vantage.git /usr/local/vantage &> /dev/null
-if not $status; exit 1; end
 
 echo "Linking script to /usr/local/bin/..."
 ln -s /usr/local/vantage/vantage /usr/local/bin/vantage
-if not $status; exit 1; end
 ln -s /usr/local/vantage/vantage /usr/local/bin/vg
-if not $status; exit 1; end
 
 echo "Done!"
