@@ -1,0 +1,21 @@
+#!/usr/bin/env fish
+switch "$argv"
+    case 'summary'
+        echo "  plugins - Manage vantage plugins"
+    case '*'
+        echo "vantage plugins list"
+        echo "  Show a list of installed plugins"
+        echo "vantage plugins install NAME|URL"
+        echo "  Install a new plugin"
+        echo "  NAME - Install official vantage plugin by name"
+        echo "    e.g. vantage plugins install pg"
+        echo "  URL - Install plugin via git url"
+        echo "    e.g. vantage plugins install https://github.com/vantage-org/pg.git"
+        echo "vantage plugins uninstall NAME"
+        echo "  Remove an installed plugin"
+        echo "    e.g. vantage plugins uninstall pg"
+        echo "vantage plugins update NAME"
+        echo "  Update a plugin to the latest version"
+        echo "vantage plugins which NAME"
+        echo "  Find where a plugin is installed"
+end

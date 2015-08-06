@@ -1,0 +1,14 @@
+#!/usr/bin/env fish
+switch "$argv"
+    case 'summary'
+        echo "  env - Read and write your app's environment values"
+    case '*'
+        echo "vantage env"
+        echo "  Print the entire environment"
+        echo "vantage env KEY"
+        echo "  Print the value of env variable KEY"
+        echo "  e.g. vantage env DATABASE_URL"
+        echo "vantage env KEY VALUE"
+        echo "  Set env value KEY to VALUE"
+        echo "  env values set like this are not persistent"
+end

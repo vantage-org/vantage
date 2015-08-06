@@ -1,0 +1,11 @@
+#!/usr/bin/env fish
+switch "$argv"
+    case 'summary'
+        echo "  update - Update vantage and plugins"
+    case '*'
+        echo "vantage update"
+        echo "  Update vantage itself"
+        echo "vantage update PLUGIN"
+        echo "  Update specific plugin"
+        echo "  e.g. vantage update pg"
+end

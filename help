@@ -1,0 +1,21 @@
+#!/usr/bin/env fish
+
+function print_summaries
+    for path in $VG_PLUGIN_PATH
+        for plugin in (ls "$path")
+            if test -f "$path/$plugin/help"
+                eval "$path/$plugin/help" summary
+            else
+                echo "  $plugin"
+            end
+        end
+    end
+end
+
+echo "Usage: vantage [--env|-e ENV_FILE [...]] [--var|-v KEY=VALUE [...]] [--app|-a APP_DIR [...]] COMMAND"
+echo ""
+echo "For more information see the GitHub repo: https://github.com/vantage-org/vantage"
+echo "Or run `vantage help COMMAND`"
+echo ""
+echo "Commands:"
+print_summaries | sort

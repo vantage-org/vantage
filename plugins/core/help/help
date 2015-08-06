@@ -1,0 +1,10 @@
+#!/usr/bin/env fish
+switch "$argv"
+    case 'summary'
+        echo "  help - Print help on using vantage"
+    case '*'
+        echo "vantage help"
+        echo "  Print a list of commands"
+        echo "vantage help COMMAND"
+        echo "  Show more detailed help on a specific command"
+end

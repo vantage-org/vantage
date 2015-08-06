@@ -1,0 +1,17 @@
+#!/usr/bin/env fish
+
+switch "$argv"
+    case ''
+        set d_help (dirname (status --current-filename))
+        set d_core (dirname "$d_help")
+        set d_plugins (dirname "$d_core")
+        set d (dirname "$d_plugins")
+    case '*'
+        set d (vantage plugins which "$argv")
+end
+
+if test -f "$d/help"
+    eval "$d/help"
+else
+    echo "vantage: No help available for $argv"
+end

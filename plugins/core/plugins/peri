@@ -19,4 +19,20 @@ switch "$argv[1]"
         rm -rf "$d_plugins/installed/$argv[2]"
     case 'update'
         vantage update "$argv[2]"
+    case 'which' 'where' 'find'
+        if test (count $argv) -lt 2; vantage help plugins; exit 1; end
+        for path in $VG_PLUGIN_PATH
+            for plugin in (ls "$path")
+                if test -f "$path/$plugin/aliases"
+                    set aliases (cat "$path/$plugin/aliases")
+                end
+                contains "$argv[2]" "$aliases"
+                if test $status -eq 0 -o "$plugin" = "$argv[2]"
+                    echo "$path/$plugin"
+                    exit 0
+                end
+            end
+        end
+    case '*'
+        vantage help plugins
 end
