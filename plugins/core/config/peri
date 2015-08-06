@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 switch (count $argv)
     case '0'
-        set | grep --colour=NEVER "^VG_"
+        set | grep "^VG_" --colour=NEVER
     case '1'
         echo "$$argv[1]"
     case '*'

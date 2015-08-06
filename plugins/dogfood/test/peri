@@ -1,25 +1,29 @@
 #!/usr/bin/env fish
 
 function run
-    set path "$argv"
+    set path "$argv[2]"
     set test_case (basename "$path")
     set output (eval "$path/run")
     set code $status
     if test $status -eq 0
-        echo "$test_case OK"
+        echo "$argv[1]: $test_case OK"
     else
-        echo "$test_case FAIL"
+        echo "$argv[1]: $test_case FAIL"
         for o in $output
-            echo "$o"
+            echo "  $o"
         end
     end
 end
 
-switch "$argv"
-    case ''
-        for t in (ls "$VG_APP_DIR/tests/")
-            run "$VG_APP_DIR/tests/$t"
+for t in (ls "$VG_APP_DIR/tests/")
+    run "vantage" "$VG_APP_DIR/tests/$t"
+end
+for path in $VG_PLUGIN_PATH
+    for plugin in (ls "$path")
+        if test -d "$path/$plugin/tests"
+            for t in (ls "$path/$plugin/tests")
+                run "$plugin" "$path/$plugin/tests/$t"
+            end
         end
-    case '*'
-        run "$VG_APP_DIR/tests/$argv"
+    end
 end

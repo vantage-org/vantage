@@ -5,7 +5,4 @@ switch "$argv"
     case '*'
         echo "vantage test"
         echo "  Run every test"
-        echo "vantage test NAME"
-        echo "  Only run NAME"
-        echo "  e.g. vantage test load_config"
 end
