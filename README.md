@@ -3,7 +3,7 @@ Command line shortcuts for managing Docker containers during development.
 
 ## Install
 
-    wget -qO- https://raw.githubusercontent.com/WilliamMayor/vantage/master/bootstrap | sh
+    wget -qO- https://raw.githubusercontent.com/vantage-org/vantage/master/bootstrap | sh
 
 `vantage` is downloaded and updated using git, so you'll need that installed before the bootstrap script will work.
 
