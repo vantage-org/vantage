@@ -2,7 +2,7 @@
 set -e
 
 echo "Removing any existing vantage installations..."
-rm -rf /usr/local/vantage
+rm -rf /usr/local/vantage /usr/local/bin/vantage /usr/local/bin/vg
 
 echo "Cloning vantage into /usr/local/vantage..."
 git clone https://github.com/vantage-org/vantage.git /usr/local/vantage
