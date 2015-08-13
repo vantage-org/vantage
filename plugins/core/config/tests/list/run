@@ -8,7 +8,7 @@ set o (vantage --app "$d" config)
 rm -rf "$d"
 
 switch "$o"
-    case "*VG_FOO BAR*"
+    case "*VG_FOO=BAR*"
     case '*'
         echo "Config did not contain VG_FOO"
         echo $o
@@ -16,7 +16,7 @@ switch "$o"
 end
 
 switch "$o"
-    case "*VG_APP_DIR $d*"
+    case "*VG_APP_DIR=$d*"
     case '*'
         echo "Config did not contain VG_APP_DIR"
         echo $o
@@ -24,7 +24,7 @@ switch "$o"
 end
 
 switch "$o"
-    case "*VG_ENV_FILE *"
+    case "*VG_ENV_FILE=*"
     case '*'
         echo "Config did not contain VG_ENV_FILE"
         echo $o
@@ -32,7 +32,7 @@ switch "$o"
 end
 
 switch "$o"
-    case "*VG_PLUGIN_PATH *"
+    case "*VG_PLUGIN_PATH=*"
     case '*'
         echo "Config did not contain VG_PLUGIN_PATH"
         echo $o
@@ -40,7 +40,7 @@ switch "$o"
 end
 
 switch "$o"
-    case "*VG_PARENT_ENV_FILE *"
+    case "*VG_PARENT_ENV_FILE=*"
     case '*'
         echo "Config did not contain VG_PARENT_FILE"
         echo $o
