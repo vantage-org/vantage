@@ -27,8 +27,6 @@ function get_arg_values --description "get_arg_values \"$argv\" KEY KEY... - ret
                             break
                         end
                     end
-                case '*'
-                    break
             end
         end
     end

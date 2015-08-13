@@ -1,0 +1,24 @@
+#!/usr/bin/env fish
+
+set f (mktemp)
+echo "TEST_LIST_ONE=ONE" > "$f"
+
+set o (vantage --env "$f" --var TEST_LIST_TWO=TWO env)
+
+rm -rf "$f"
+
+switch "$o"
+    case "*TEST_LIST_ONE=ONE*"
+    case '*'
+        echo "Env did not contain TEST_LIST_ONE=ONE"
+        echo $o
+        exit 1
+end
+
+switch "$o"
+    case "*TEST_LIST_TWO=TWO*"
+    case '*'
+        echo "Env did not contain TEST_LIST_TWO=TWO"
+        echo $o
+        exit 1
+end

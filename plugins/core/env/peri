@@ -2,10 +2,7 @@
 
 switch (count $argv)
     case '0'
-        for line in (cat $VG_ENV_FILE)
-            set kv (split $line "=")
-            echo $kv[1] $kv[2..-1]
-        end
+        cat $VG_ENV_FILE
     case '1'
         for line in (cat $VG_ENV_FILE)
             set kv (echo $line | tr "=" "\n")
