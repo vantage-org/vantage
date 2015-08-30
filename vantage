@@ -131,9 +131,11 @@ if test $found -eq 0
     vantage help
 else
     for c in $pre; eval "$c $args"; end
-    for c in $peri; eval "$c $args"; end
+    for c in $peri; eval "$c $args"; set code $status; end
     for c in $post; eval "$c $args"; end
 end
 
 rm -f "$VG_ENV_FILE"
 set --erase VG_ENV_FILE
+
+exit $code

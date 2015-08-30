@@ -1,0 +1,15 @@
+#!/usr/bin/env fish
+
+set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_APP_DIR/tests/exit_with_code/plugins"
+
+vantage foo
+
+set s $status
+
+if test $s -ne 42
+    echo "    Thought plugin exit code should be 42, it was $s"
+else
+    set s 0
+end
+
+exit $s
