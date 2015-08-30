@@ -1,44 +1,7 @@
 #!/usr/bin/env fish
 
-# Some utility functions
-
-function split --description "split STRING DELIMETER - returns a list of the parts of STRING split by DELIMETER"
-    echo $argv[1] | tr "$argv[2]" "\n"
-end
-
-function return_as_list --description "return_as_list LIST - echoes LIST each item on a new line"
-    for i in $argv
-        echo $i
-    end
-end
-
-function get_arg_values --description "get_arg_values \"$argv\" KEY KEY... - returns a list of all values associated with any KEY"
-    set keep 0
-    for a in (split $argv[1] " ")
-        if test $keep -eq 1
-            set values $values $a
-            set keep 0
-        else
-            switch $a
-                case '-*'
-                    for b in $argv[2..-1]
-                        if test "$a" = "$b"
-                            set keep 1
-                            break
-                        end
-                    end
-            end
-        end
-    end
-    return_as_list $values
-end
-
-function get_arg_value --description "get_arg_value \"$argv\" KEY KEY... - returns the first value associated with any KEY"
-    set values (get_arg_values $argv)
-    if test -n "$values"
-        echo $values[1]
-    end
-end
+set here (dirname (status --current-filename))
+source "$here/functions"
 
 # First, find out what app we're interested in
 
@@ -132,7 +95,6 @@ if test -z "$VG_PLUGIN_PATH"
     end
 end
 
-set here (dirname (status --current-filename))
 if not contains "$here/plugins/installed" $VG_PLUGIN_PATH
     set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$here/plugins/installed"
 end

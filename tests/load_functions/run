@@ -1,0 +1,15 @@
+#!/usr/bin/env fish
+
+set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_APP_DIR/tests/load_functions/plugins"
+
+set o (vantage foo)
+
+test "$o" = "Loaded!"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought plugin output should be Loaded!, it was $o"
+end
+
+exit $s
