@@ -15,15 +15,24 @@ function run
     end
 end
 
-for t in (ls "$VG_APP_DIR/tests/")
-    run "vantage" "$VG_APP_DIR/tests/$t"
-end
-for path in $VG_PLUGIN_PATH
-    for plugin in (ls "$path")
-        if test -d "$path/$plugin/tests"
-            for t in (ls "$path/$plugin/tests")
-                run "$plugin" "$path/$plugin/tests/$t"
+switch "$argv"
+    case ''
+        vantage test vantage
+        for path in $VG_PLUGIN_PATH
+            for plugin in (ls "$path")
+                vantage test "$plugin"
             end
         end
-    end
+    case 'vantage' 'vg'
+        for t in (ls "$VG_APP_DIR/tests")
+            run "vantage" "$VG_APP_DIR/tests/$t"
+        end
+    case '*'
+        for path in $VG_PLUGIN_PATH
+            if test -d "$path/$argv/tests"
+                for t in (ls "$path/$argv/tests")
+                    run "$argv" "$path/$argv/tests/$t"
+                end
+            end
+        end
 end
