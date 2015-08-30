@@ -1,11 +1,7 @@
 #!/usr/bin/env fish
 
-set d (mktemp --directory)
-
-vantage --app "$d" env FOO BAR
-set o (vantage --app "$d" env FOO)
-
-rm -rf "$d"
+vantage env FOO BAR
+set o (vantage env FOO)
 
 test "$o" = "BAR"
 

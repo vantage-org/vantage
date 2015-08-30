@@ -140,47 +140,26 @@ if not contains "$here/plugins/core" $VG_PLUGIN_PATH
     set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$here/plugins/core"
 end
 
-set pre_override 0
-set peri_override 0
-set post_override 0
 set found 0
 for path in $VG_PLUGIN_PATH
     for plugin in (ls "$path")
+        set names "$plugin"
         if test -f "$path/$plugin/aliases"
-            set aliases (cat "$path/$plugin/aliases")
+            set names $names (cat "$path/$plugin/aliases")
         end
-        contains "$cmd" "$aliases"
-        if test $status -eq 0 -o "$plugin" = "$cmd"
+        if contains "$cmd" $names
             set p "$path/$plugin"
-            if test $pre_override -eq 0
-                if test -f "$p/pre.override"
-                    set pre "$p/pre.override"
-                    set pre_override 1
-                    set found 1
-                else if test -f "$p/pre"
-                    set pre $pre "$p/pre"
-                    set found 1
-                end
+            if test -f "$p/pre"
+                set pre $pre "$p/pre"
+                set found 1
             end
-            if test $peri_override -eq 0
-                if test -f "$p/peri.override"
-                    set peri "$p/peri.override"
-                    set peri_override 1
-                    set found 1
-                else if test -f "$p/peri"
-                    set peri $peri "$p/peri"
-                    set found 1
-                end
+            if test -f "$p/peri"
+                set peri $peri "$p/peri"
+                set found 1
             end
-            if test $post_override -eq 0
-                if test -f "$p/post.override"
-                    set post "$p/post.override"
-                    set post_override 1
-                    set found 1
-                else if test -f "$p/post"
-                    set post $post "$p/post"
-                    set found 1
-                end
+            if test -f "$p/post"
+                set post $post "$p/post"
+                set found 1
             end
         end
     end

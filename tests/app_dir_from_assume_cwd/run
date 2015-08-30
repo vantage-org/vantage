@@ -2,7 +2,6 @@
 
 set --erase VG_APP_DIR
 
-
 cd /tmp
 vantage config VG_APP_DIR
 set o (vantage config VG_APP_DIR)
