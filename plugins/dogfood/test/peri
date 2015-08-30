@@ -4,7 +4,6 @@ function run
     set path "$argv[2]"
     set test_case (basename "$path")
     set output (eval "$path/run")
-    set code $status
     if test $status -eq 0
         echo "$argv[1]: $test_case OK"
     else

@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 
-set here (dirname (status --current-filename))
-source "$here/functions"
+set --export --global VG_INSTALL_DIR (dirname (status --current-filename))
+source "$VG_INSTALL_DIR/functions"
 
 # First, find out what app we're interested in
 
@@ -95,11 +95,11 @@ if test -z "$VG_PLUGIN_PATH"
     end
 end
 
-if not contains "$here/plugins/installed" $VG_PLUGIN_PATH
-    set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$here/plugins/installed"
+if not contains "$VG_INSTALL_DIR/plugins/installed" $VG_PLUGIN_PATH
+    set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_INSTALL_DIR/plugins/installed"
 end
-if not contains "$here/plugins/core" $VG_PLUGIN_PATH
-    set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$here/plugins/core"
+if not contains "$VG_INSTALL_DIR/plugins/core" $VG_PLUGIN_PATH
+    set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_INSTALL_DIR/plugins/core"
 end
 
 set found 0
