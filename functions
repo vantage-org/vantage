@@ -35,3 +35,15 @@ function get_arg_value --description "get_arg_value \"$argv\" KEY KEY... - retur
         echo $values[1]
     end
 end
+
+function get_arg_flag --description "get_arg_flag \"$argv\" KEY KEY... - Exits successfully if KEY is present in args"
+    for f in $argv[2..-1]
+        switch "$argv[1]"
+            case "* $f *"
+                return 0
+            case "* $f"
+                return 0
+        end
+    end
+    return 1
+end
