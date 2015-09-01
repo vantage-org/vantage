@@ -1,6 +1,11 @@
 #!/usr/bin/env fish
 
+set pass 0
+
 vantage env FOO BAR
+vantage env TWICE ONE
+vantage env TWICE TWO
+
 set o (vantage env FOO)
 
 test "$o" = "BAR"
@@ -9,6 +14,18 @@ set s $status
 
 if test $s -ne 0
     echo "    Thought the env variable FOO should be BAR, it was $o"
+    set pass 1
 end
 
-exit $s
+set o (vantage env TWICE)
+
+test "$o" = "TWO"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought the env variable TWICE should be TWO, it was $o"
+    set pass 1
+end
+
+exit $pass

@@ -4,7 +4,7 @@ switch (count $argv)
     case '0'
         cat $VG_ENV_FILE
     case '1'
-        for line in (cat $VG_ENV_FILE)
+        for line in (cat $VG_ENV_FILE | sed '1!G;h;$!d')
             set kv (echo $line | tr "=" "\n")
             if test "$kv[1]" = "$argv[1]"
                 echo $kv[2]
