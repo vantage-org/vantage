@@ -1,0 +1,11 @@
+#!/usr/bin/env fish
+switch "$argv"
+    case 'summary'
+        echo "  hw - Say hello world"
+    case '*'
+        echo "\
+vantage hw
+  Prints Hello World! Unless the config and/or env is set
+  In config use VG_HW_GREETING=... to change the greeting from Hello
+  In the ENV use VG_HW_NAME=... to change the name from World"
+end

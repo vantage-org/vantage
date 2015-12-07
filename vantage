@@ -73,11 +73,9 @@ end
 
 # Third, set the plugin paths
 
-# If it's not set at all, default to a vantage dir in the app dir
+# If it's not set at all, default to the dogfood plugins
 if test -z "$VG_PLUGIN_PATH"
-    if test -d "$VG_APP_DIR/vantage"
-        set --export --global VG_PLUGIN_PATH "$VG_APP_DIR/vantage"
-    end
+    set --export --global VG_PLUGIN_PATH "$VG_INSTALL_DIR/plugins/dogfood"
 end
 
 # If the default plugin paths are missing, add them back in

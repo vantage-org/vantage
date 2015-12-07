@@ -1,0 +1,14 @@
+#!/usr/bin/env fish
+
+set GREETING $VG_HW_GREETING
+set NAME (vantage env VG_HW_NAME)
+
+if test -z "$GREETING"
+    set GREETING "Hello"
+end
+
+if test -z "$NAME"
+    set NAME "World"
+end
+
+echo "$GREETING $NAME!"
