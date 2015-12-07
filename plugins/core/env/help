@@ -3,11 +3,12 @@ switch "$argv"
     case 'summary'
         echo "  env - Read and write your app's environment values"
     case '*'
-        echo "vantage env"
-        echo "  Print the entire environment"
-        echo "vantage env KEY"
-        echo "  Print the value of env variable KEY"
-        echo "  e.g. vantage env DATABASE_URL"
-        echo "vantage env KEY VALUE"
-        echo "  Set env value KEY to VALUE"
+        echo "\
+vantage env
+  Print the entire environment
+vantage env KEY
+  Print the value of env variable KEY
+  e.g. vantage env DATABASE_URL
+vantage env KEY VALUE
+  Set env value KEY to VALUE"
 end

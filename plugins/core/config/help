@@ -3,12 +3,13 @@ switch "$argv"
     case 'summary'
         echo "  config - Read and write vantage config values"
     case '*'
-        echo "vantage config"
-        echo "  Print every vantage config value known"
-        echo "vantage config KEY"
-        echo "  Print the value of config variable KEY"
-        echo "  e.g. vantage config VG_APP_DIR"
-        echo "vantage config KEY VALUE"
-        echo "  Set config value KEY to VALUE"
-        echo "  Config values set like this will be stored in $VG_APP_DIR/.vantage"
+        echo "\
+vantage config
+  Print every vantage config value known
+vantage config KEY
+  Print the value of config variable KEY
+  e.g. vantage config VG_APP_DIR
+vantage config KEY VALUE
+  Set config value KEY to VALUE
+  Config values set like this will be stored in $VG_APP_DIR/.vantage"
 end

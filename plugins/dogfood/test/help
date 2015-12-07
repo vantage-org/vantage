@@ -3,6 +3,9 @@ switch "$argv"
     case 'summary'
         echo "  test - Run vantage tests"
     case '*'
-        echo "vantage test"
-        echo "  Run every test"
+        echo "\
+vantage test
+  Run every test
+vantage test NAME
+  Run the tests only for the NAME plugin"
 end

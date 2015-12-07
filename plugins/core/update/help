@@ -3,9 +3,10 @@ switch "$argv"
     case 'summary'
         echo "  update - Update vantage and plugins"
     case '*'
-        echo "vantage update"
-        echo "  Update vantage itself"
-        echo "vantage update PLUGIN"
-        echo "  Update specific plugin"
-        echo "  e.g. vantage update pg"
+        echo "\
+vantage update
+  Update vantage itself
+vantage update PLUGIN
+  Update specific plugin
+  e.g. vantage update pg"
 end
