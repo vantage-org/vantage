@@ -71,11 +71,29 @@ for v in (get_arg_values "$argv" "--var" "-v")
     echo "$v" >> "$VG_ENV_FILE"
 end
 
-# Third, find the commands to run
+# Third, set the plugin paths
 
+# If it's not set at all, default to a vantage dir in the app dir
+if test -z "$VG_PLUGIN_PATH"
+    if test -d "$VG_APP_DIR/vantage"
+        set --export --global VG_PLUGIN_PATH "$VG_APP_DIR/vantage"
+    end
+end
+
+# If the default plugin paths are missing, add them back in
+if not contains "$VG_INSTALL_DIR/plugins/installed" $VG_PLUGIN_PATH
+    set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_INSTALL_DIR/plugins/installed"
+end
+if not contains "$VG_INSTALL_DIR/plugins/core" $VG_PLUGIN_PATH
+    set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_INSTALL_DIR/plugins/core"
+end
+
+# Fourth, find the commands to run
+
+# Remove the --env --var --app parts of the command
 while true
     switch "$argv[1]"
-        case '-*'
+        case '--var' '-v' '--env' '-e' '--app' '-a'
             set argv $argv[3..-1]
         case '*'
             break
@@ -90,19 +108,6 @@ if test (count $argv) -gt 1
     set args $argv[2..-1]
 end
 
-if test -z "$VG_PLUGIN_PATH"
-    if test -d "$VG_APP_DIR/vantage"
-        set --export --global VG_PLUGIN_PATH "$VG_APP_DIR/vantage"
-    end
-end
-
-if not contains "$VG_INSTALL_DIR/plugins/installed" $VG_PLUGIN_PATH
-    set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_INSTALL_DIR/plugins/installed"
-end
-if not contains "$VG_INSTALL_DIR/plugins/core" $VG_PLUGIN_PATH
-    set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_INSTALL_DIR/plugins/core"
-end
-
 set found 0
 for path in $VG_PLUGIN_PATH
     for plugin in (ls "$path")
@@ -111,19 +116,8 @@ for path in $VG_PLUGIN_PATH
             set names $names (cat "$path/$plugin/aliases")
         end
         if contains "$cmd" $names
-            set p "$path/$plugin"
-            if test -f "$p/pre"
-                set pre $pre "$p/pre"
-                set found 1
-            end
-            if test -f "$p/peri"
-                set peri $peri "$p/peri"
-                set found 1
-            end
-            if test -f "$p/post"
-                set post $post "$p/post"
-                set found 1
-            end
+            set found 1
+            set run $run "$path/$plugin/run"
         end
     end
 end
@@ -131,9 +125,10 @@ end
 if test $found -eq 0
     vantage help
 else
-    for c in $pre; eval "$c $args"; end
-    for c in $peri; eval "$c $args"; set code $status; end
-    for c in $post; eval "$c $args"; end
+    for c in $run
+        eval "$c $args"
+        set code $status
+    end
 end
 
 rm -f "$VG_ENV_FILE"
