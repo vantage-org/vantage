@@ -1,5 +1,14 @@
 #!/usr/bin/env fish
 
+set o (vantage env FOO)
+test -z "$o"
+
+set s $status
+
+if test $s -ne 0
+    echo "    Thought env variable FOO should be empty, it was $o"
+end
+
 vantage env FOO BAR
 set o (vantage env FOO)
 

@@ -56,6 +56,7 @@ else
     # We are the parent process so we have to build the starting env
     set --export --global VG_ENV_FILE (mktemp)
     if test -n "$VG_DEFAULT_ENV"
+        set --export --global VG_PARENT_ENV_FILE "$VG_DEFAULT_ENV"
         cat "$VG_DEFAULT_ENV" > "$VG_ENV_FILE"
     end
 end

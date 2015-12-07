@@ -10,5 +10,4 @@ switch "$argv"
         echo "  e.g. vantage env DATABASE_URL"
         echo "vantage env KEY VALUE"
         echo "  Set env value KEY to VALUE"
-        echo "  env values set like this are not persistent"
 end
