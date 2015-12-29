@@ -13,3 +13,4 @@ ln -s /usr/local/vantage/vantage /usr/local/bin/vantage
 ln -s /usr/local/vantage/vantage /usr/local/bin/vg
 
 echo "Done!"
+echo "Run `vantage help` to see what to do now :)"

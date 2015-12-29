@@ -2,9 +2,10 @@
 
 switch (count $argv)
     case '0'
-        cat $VG_ENV_FILE
+        set here (dirname (status --current-filename))
+        env -i "$here/cave" "$VG_ENV_FILE"
     case '1'
-        for line in (cat $VG_ENV_FILE | sed '1!G;h;$!d')
+        for line in (vantage env)
             set kv (echo $line | tr "=" "\n")
             if test "$kv[1]" = "$argv[1]"
                 echo $kv[2]
@@ -12,6 +13,14 @@ switch (count $argv)
             end
         end
         exit 1
+    case '2'
+        if test -f "$VG_ROOT_ENV_FILE"
+            set tmp (mktemp)
+            cp "$VG_ROOT_ENV_FILE" "$tmp"
+            echo "$argv[1]=$argv[2]" >> "$tmp"
+            vantage --env "$tmp" env > "$VG_ROOT_ENV_FILE"
+        end
     case '*'
-        echo "$argv[1]=$argv[2..-1]" >> "$VG_PARENT_ENV_FILE"
+        echo "I'm not sure what you want me to do..."
+        exit 1
 end

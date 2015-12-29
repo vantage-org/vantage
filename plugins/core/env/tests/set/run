@@ -20,4 +20,22 @@ if test $s -ne 0
     echo "    Thought env variable FOO should be BAR, it was $o"
 end
 
+set tmp (mktemp)
+vantage --env "$tmp" env FOO BAR2
+set o (vantage env FOO)
+test "$o" = "BAR"
+set s $status
+if test $s -ne 0
+    echo "    Thought env variable FOO should be BAR, it was $o"
+end
+
+set o (vantage --env "$tmp" env FOO)
+test "$o" = "BAR2"
+set s $status
+if test $s -ne 0
+    echo "    Thought env variable FOO should be BAR2, it was $o"
+end
+
+rm "$tmp"
+
 exit $s
