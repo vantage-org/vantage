@@ -1,6 +1,7 @@
 #!/usr/bin/env fish
+set here (dirname (status --current-filename))
 
-set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_APP_DIR/tests/run/one" "$VG_APP_DIR/tests/run/two"
+set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$here/one" "$here/two"
 
 set o (vantage foo)
 

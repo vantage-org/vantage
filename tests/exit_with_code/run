@@ -1,6 +1,8 @@
 #!/usr/bin/env fish
 
-set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_APP_DIR/tests/exit_with_code/plugins"
+set here (dirname (status --current-filename))
+
+set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$here/plugins"
 
 vantage foo
 
