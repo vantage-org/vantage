@@ -14,7 +14,7 @@ switch "$argv[1]"
         end
         mkdir -p "$d_plugins/installed"
         cd "$d_plugins/installed"
-        git clone "$name"
+        git clone "$name" --recursive
     case 'uninstall' 'remove'
         rm -rf "$d_plugins/installed/$argv[2]"
     case 'update'
