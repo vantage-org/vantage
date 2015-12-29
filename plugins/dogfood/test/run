@@ -23,8 +23,8 @@ switch "$argv"
             end
         end
     case 'vantage' 'vg'
-        for t in (ls "$VG_APP_DIR/tests")
-            run "vantage" "$VG_APP_DIR/tests/$t"
+        for t in (ls "$VG_INSTALL_DIR/tests")
+            run "vantage" "$VG_INSTALL_DIR/tests/$t"
         end
     case '*'
         for path in $VG_PLUGIN_PATH
