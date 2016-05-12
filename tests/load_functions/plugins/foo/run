@@ -1,6 +1,0 @@
-#!/usr/bin/env fish
-
-set here (dirname (status --current-filename))
-source "$here/functions"
-
-load_this
