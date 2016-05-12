@@ -1,137 +1,117 @@
-#!/usr/bin/env fish
+#!/bin/bash
 
-set --export --global VG_INSTALL_DIR (dirname (status --current-filename))
-source "$VG_INSTALL_DIR/functions"
+install_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+export VG_INSTALL_DIR="$install_dir"
 
-# First, find out what app we're interested in
+# Step One: Get the app directory
 
 # Check if there's a command line argument setting it
-set app (get_arg_value "$argv" "--app" "-a")
+while getopts ":a:" opt; do
+    case $opt in
+        a)
+            export VG_APP_DIR="$OPTARG"
+            ;;
+        :)
+            echo "Set -a to point to your app's root directory" >&2
+            exit 1
+            ;;
+    esac
+done
 
-# If not, try an environment variable
-if test -z "$app"
-    set app "$VG_APP_DIR"
-end
-
-# If not, try finding a .vantage file in CWD or above
-if test -z "$app"
-    set app "$PWD"
-    while true
-        if test -f "$app/.vantage"
+# If not, try finding a .vantage file in PWD or above
+if [ -z "$VG_APP_DIR" ]; then
+    export VG_APP_DIR="$PWD"
+    while true; do
+        if [ -f "$VG_APP_DIR/.vantage" ]; then
             break
         else
-            if test "$app" = "/"
-                set --erase app
+            if [ "$VG_APP_DIR" = "/" ]; then
+                export VG_APP_DIR=""
                 break
-            end
-            set app (dirname "$app")
-        end
-    end
-end
+            fi
+            up=$(dirname "$VG_APP_DIR")
+            export VG_APP_DIR="$up"
+        fi
+    done
+fi
 
 # Finally, default to $PWD
-if test -z "$app"
-    set app "$PWD"
-end
+if [ -z "$VG_APP_DIR" ]; then
+    export VG_APP_DIR="$PWD"
+fi
 
-set --export --global VG_APP_DIR "$app"
-if test -f "$VG_APP_DIR/.vantage"
-    for line in (cat "$VG_APP_DIR/.vantage")
-        set kv (split $line "=")
-        if test -z "$$kv[1]"
-            set --export --global $kv[1] $kv[2..-1]
-        end
-    end
-end
 
-# Second, compile the required environment
+# Step Two: Compile the environment
 
-if test -n "$VG_ENV_FILE"
-    # A parent env file exists, so we can use the parent as our starting env
-    set temp_env_file (mktemp)
-    cat "$VG_ENV_FILE" > "$temp_env_file"
-    set --export --global VG_PARENT_ENV_FILE "$VG_ENV_FILE"
-    set --export --global VG_ENV_FILE "$temp_env_file"
+# We might be a child process of another vantage call, save the parent ENV file
+export VG_PARENT_ENV="$VG_ENV_FILE"
+
+# Create a new, temporary, file for our process
+temp_file=$(mktemp)
+export VG_ENV_FILE="$temp_file"
+
+if [ -n "$VG_PARENT_ENV" ]; then
+    # If there's a parent env file, use that as the base
+    cat "$VG_PARENT_ENV" >> "$VG_ENV_FILE"
 else
-    # We are the parent process so we have to build the starting env
-    set --export --global VG_ENV_FILE (mktemp)
-    if test -n "$VG_DEFAULT_ENV"
-        set --export --global VG_ROOT_ENV_FILE "$VG_DEFAULT_ENV"
-        set --export --global VG_PARENT_ENV_FILE "$VG_DEFAULT_ENV"
-        cat "$VG_DEFAULT_ENV" > "$VG_ENV_FILE"
-    end
-end
+    # If not we'll have to create our own base
+    # If there's a .vantage file in the app directory, load it
+    if [ -f "$VG_APP_DIR/.vantage" ]; then
+        cat "$VG_APP_DIR/.vantage" >> "$VG_ENV_FILE"
+        export $(cat "$VG_ENV_FILE" | xargs)
+    fi
+    # Try to find a default env, load that
+    if [ -n "$VG_DEFAULT_ENV" ]; then
+        cat "$VG_DEFAULT_ENV" >> "$VG_ENV_FILE"
+        export $(cat "$VG_ENV_FILE" | xargs)
+    fi
+fi
 
-# Add any env files listed in the command line
-for e in (get_arg_values "$argv" "--env" "-e")
-    set --export --global VG_ROOT_ENV_FILE "$e"
-    cat "$e" >> "$VG_ENV_FILE"
-end
+# Load env files provided on the command line
 
-# Add any variables set in the command line
-for v in (get_arg_values "$argv" "--var" "-v")
-    echo "$v" >> "$VG_ENV_FILE"
-end
+while getopts ":e:" opt; do
+    case $opt in
+        e)
+            if [ ! -f "$OPTARG" ]; then
+                OPTARG="$VG_ENV_DIR/OPTARG"
+            fi
+            if [ ! -f "$OPTARG" ]; then
+                echo "Couldn't find the env file at $OPTARG" >&2
+                exit 1
+            fi
+            export VG_NAMED_ENV_FILE="$OPTARG"
+            cat "$OPTARG" >> "$VG_ENV_FILE"
+            ;;
+        :)
+            echo "Use -e to provide an env file -e PATH" >&2
+            exit 1
+            ;;
+    esac
+done
 
-# Third, set the plugin paths
+# Load variables set on the command line
 
-# If it's not set at all, default to the dogfood plugins
-if test -z "$VG_PLUGIN_PATH"
-    set --export --global VG_PLUGIN_PATH "$VG_INSTALL_DIR/plugins/dogfood"
-end
+while getopts ":v:" opt; do
+    case $opt in
+        v)
+        case "$OPTARG" in
+            *=*)
+                # All's good
+                ;;
+            *)
+                echo "Variable format must be KEY=VALUE" >&2
+                exit 1
+                ;;
+        esac
+            echo "$OPTARG" >> "$VG_ENV_FILE"
+            ;;
+        :)
+            echo "Use -v to provide a variable: -v KEY=VALUE" >&2
+            exit 1
+            ;;
+    esac
+done
 
-# If the default plugin paths are missing, add them back in
-if not contains "$VG_INSTALL_DIR/plugins/installed" $VG_PLUGIN_PATH
-    set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_INSTALL_DIR/plugins/installed"
-end
-if not contains "$VG_INSTALL_DIR/plugins/core" $VG_PLUGIN_PATH
-    set --export --global VG_PLUGIN_PATH $VG_PLUGIN_PATH "$VG_INSTALL_DIR/plugins/core"
-end
+export $(cat "$VG_ENV_FILE" | xargs)
 
-# Fourth, find the commands to run
-
-# Remove the --env --var --app parts of the command
-while true
-    switch "$argv[1]"
-        case '--var' '-v' '--env' '-e' '--app' '-a'
-            set argv $argv[3..-1]
-        case '*'
-            break
-    end
-end
-
-set cmd $argv[1]
-if test -z "$cmd"
-    set cmd "help"
-end
-if test (count $argv) -gt 1
-    set args $argv[2..-1]
-end
-
-set found 0
-for path in $VG_PLUGIN_PATH
-    for plugin in (ls "$path")
-        set names "$plugin"
-        if test -f "$path/$plugin/aliases"
-            set names $names (cat "$path/$plugin/aliases")
-        end
-        if contains "$cmd" $names
-            set found 1
-            set run $run "$path/$plugin/run"
-        end
-    end
-end
-
-if test $found -eq 0
-    vantage help
-else
-    for c in $run
-        eval "$c $args"
-        set code $status
-    end
-end
-
-rm -f "$VG_ENV_FILE"
-set --erase VG_ENV_FILE
-
-exit $code
+eval "$@"
