@@ -1,0 +1,14 @@
+#!/bin/bash
+
+GREETING=$VG_HW_GREETING
+NAME=$(vantage __env VG_HW_NAME)
+
+if [ -z "$GREETING" ]; then
+    GREETING="Hello"
+fi
+
+if [ -z "$NAME" ]; then
+    NAME="World"
+fi
+
+echo "$GREETING $NAME!"

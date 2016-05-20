@@ -1,22 +1,63 @@
 #!/bin/bash
 
-install_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# Functions
+
+function load_env {
+    e=$(cat "$VG_ENV_FILE")
+    if [ -n "$e" ]; then
+        export $(echo "$e" | xargs)
+    fi
+}
+
+# find_script ROOT_DIR SCRIPT_NAME [ARGS...]
+function find_script {
+    if [ -f "$1/$2" ] && [ -x "$1/$2" ]; then
+        # Regular executable file
+        echo "$1/$2" "${@:3}"
+        return
+    fi
+    if [ -n "$3" ]; then
+        # The next argument might be a script to run
+        script=$(find_script "$1/$2" "${@:3}")
+        if [ -n "$script" ]; then
+            echo "$script"
+            return
+        fi
+    fi
+    if [ -f "$1/$2/$2" ] && [ -x "$1/$2/$2" ]; then
+        # Script inside a directory with the same name
+        echo "$1/$2/$2" "${@:3}"
+        return
+    fi
+}
+
+# Main
+
+script_path="${BASH_SOURCE[0]}"
+if [ -L "$script_path" ]; then
+    # If we're a symlink then follow it
+    install_dir=$(cd "$(dirname "$(readlink -f "$script_path")")" && pwd)
+else
+    install_dir=$(cd "$(dirname "$script_path")" && pwd)
+fi
 export VG_INSTALL_DIR="$install_dir"
 
 # Step One: Get the app directory
 
 # Check if there's a command line argument setting it
-while getopts ":a:" opt; do
+while getopts ":a:v:e:" opt; do
     case $opt in
         a)
             export VG_APP_DIR="$OPTARG"
             ;;
         :)
-            echo "Set -a to point to your app's root directory" >&2
+            echo "vantage: Set -a to point to your app's root directory" >&2
             exit 1
             ;;
     esac
 done
+MAXOPTIND=$OPTIND
+unset OPTIND
 
 # If not, try finding a .vantage file in PWD or above
 if [ -z "$VG_APP_DIR" ]; then
@@ -40,6 +81,11 @@ if [ -z "$VG_APP_DIR" ]; then
     export VG_APP_DIR="$PWD"
 fi
 
+# Use app dir as the env dir if there isn't one set
+if [ -z "$VG_ENV_DIR" ]; then
+    export VG_ENV_DIR="$VG_APP_DIR"
+fi
+
 
 # Step Two: Compile the environment
 
@@ -58,7 +104,7 @@ else
     # If there's a .vantage file in the app directory, load it
     if [ -f "$VG_APP_DIR/.vantage" ]; then
         cat "$VG_APP_DIR/.vantage" >> "$VG_ENV_FILE"
-        export $(cat "$VG_ENV_FILE" | xargs)
+        load_env
     fi
     # Try to find a default env, load that
     if [ -n "$VG_DEFAULT_ENV" ]; then
@@ -69,11 +115,11 @@ fi
 
 # Load env files provided on the command line
 
-while getopts ":e:" opt; do
+while getopts ":a:v:e:" opt; do
     case $opt in
         e)
             if [ ! -f "$OPTARG" ]; then
-                OPTARG="$VG_ENV_DIR/OPTARG"
+                OPTARG="$VG_ENV_DIR/$OPTARG"
             fi
             if [ ! -f "$OPTARG" ]; then
                 echo "Couldn't find the env file at $OPTARG" >&2
@@ -83,35 +129,66 @@ while getopts ":e:" opt; do
             cat "$OPTARG" >> "$VG_ENV_FILE"
             ;;
         :)
-            echo "Use -e to provide an env file -e PATH" >&2
+            echo "vantage: Use -e to provide an env file -e PATH" >&2
             exit 1
             ;;
     esac
 done
+MAXOPTIND=$(( $OPTIND > $MAXOPTIND ? $OPTIND : $MAXOPTIND ))
+unset OPTIND
 
 # Load variables set on the command line
 
-while getopts ":v:" opt; do
+while getopts ":a:v:e:" opt; do
     case $opt in
         v)
-        case "$OPTARG" in
-            *=*)
-                # All's good
-                ;;
-            *)
-                echo "Variable format must be KEY=VALUE" >&2
-                exit 1
-                ;;
-        esac
+            case "$OPTARG" in
+                *=*)
+                    # All's good
+                    ;;
+                *)
+                    echo "vantage: Variable format must be KEY=VALUE" >&2
+                    exit 1
+                        ;;
+            esac
             echo "$OPTARG" >> "$VG_ENV_FILE"
             ;;
         :)
-            echo "Use -v to provide a variable: -v KEY=VALUE" >&2
+            echo "vantage: Use -v to provide a variable: -v KEY=VALUE" >&2
             exit 1
             ;;
     esac
 done
+MAXOPTIND=$(( $OPTIND > $MAXOPTIND ? $OPTIND : $MAXOPTIND ))
+unset OPTIND
 
-export $(cat "$VG_ENV_FILE" | xargs)
+shift "$(expr $MAXOPTIND - 1 )"
 
-eval "$@"
+
+load_env
+
+# Step Three: Try to find something to run
+
+if [ -z "$(type -t $1)" ]; then
+    # The command isn't available for bash to execute
+    PLUGIN_PATHS="$VG_PLUGIN_PATH $VG_INSTALL_DIR/plugins/core $VG_INSTALL_DIR/plugins/installed"
+    for path in $PLUGIN_PATHS; do
+        CMD=$(find_script "$path" "$@")
+        if [ -n "$CMD" ]; then
+            break
+        fi
+    done
+fi
+
+if [ -z "$CMD" ]; then
+    eval "$@"
+    code=$?
+else
+    eval "$CMD"
+    code=$?
+fi
+
+# Step Four: Clean up
+rm -f "$VG_ENV_FILE"
+
+exit $code

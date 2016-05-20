@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+case "$#" in
+    0)
+        # Print entire env
+        here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+        env --ignore-environment "$here/cave" "$VG_ENV_FILE"
+        ;;
+    1)
+        # Print value of variable
+        var="$1"
+        echo "${!var}"
+        ;;
+    *)
+        echo "vantage: __env: Too many arguments"
+        exit 1
+esac
