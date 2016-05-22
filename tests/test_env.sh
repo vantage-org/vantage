@@ -25,7 +25,7 @@ assert "vantage -e /vagrant/.env/one -v FOO=var __env FOO" "var"
 assert "vantage -v FOO=var -e /vagrant/.env/one __env FOO" "var"
 
 # Can use env from command line
-VG_DEFAULT_ENV=/vagrant/.env/one assert "vantage 'echo $FOO'" "one"
+VG_DEFAULT_ENV=/vagrant/.env/one assert "vantage 'echo \$FOO'" "one"
 
 # Temp env file is deleted
 temp_env_file=$(vantage __env VG_ENV_FILE)

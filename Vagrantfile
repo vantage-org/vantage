@@ -5,6 +5,11 @@ $script = <<SCRIPT
 
     ln -s /vagrant/vantage /usr/local/bin/vantage
     ln -s /vagrant/vantage /usr/local/bin/vg
+
+    mkdir -p /vagrant/.env
+    echo "FOO=one" > /vagrant/.env/one
+    echo "FOO=two" > /vagrant/.env/two
+    chown -R vagrant:vagrant /vagrant/.env
 SCRIPT
 
 Vagrant.configure(2) do |config|
