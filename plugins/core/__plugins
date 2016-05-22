@@ -1,0 +1,47 @@
+#!/bin/bash
+set -e
+
+function help {
+    cat << EOF >&2
+usage: vantage __plugins list|install|uninstall [PLUGIN_NAME]
+
+Running 'vg __plugins list' will list every installed plugin on your system
+
+Running 'vg __plugins install PLUGIN_NAME' will install the named plugin to the
+vantage plugin directory. PLUGIN_NAME can be the name of an official vantage
+plugin, or a git url that will be cloned.
+
+Running 'vg __plugins uninstall PLUGIN_NAME' will remove the named plugin.
+
+EOF
+}
+
+if [ -n "$VG_SHOW_HELP" ]; then
+    help
+    exit
+fi
+
+case "$1" in
+    list|ls|show)
+        ls -1 "$VG_INSTALL_DIR/plugins/installed"
+        ;;
+    install|add)
+        name="$2"
+        set +e
+        git ls-remote "$name" 2> /dev/null
+        if [ $? -ne 0 ]; then
+            name="https://github.com/vantage-org/$name.git"
+        fi
+        set -e
+        cd "$VG_INSTALL_DIR/plugins/installed"
+        git clone "$name" --recursive
+        cd - > /dev/null
+        ;;
+    uninstall|remove|rm)
+        rm -rf "$VG_INSTALL_DIR/plugins/installed/$2"
+        ;;
+    *)
+        help
+        exit 1
+        ;;
+esac
