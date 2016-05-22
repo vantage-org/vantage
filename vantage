@@ -125,7 +125,7 @@ while getopts ":a:v:e:" opt; do
                 echo "Couldn't find the env file at $OPTARG" >&2
                 exit 1
             fi
-            export VG_NAMED_ENV_FILE="$OPTARG"
+            export VG_NAMED_ENV="$OPTARG"
             cat "$OPTARG" >> "$VG_ENV_FILE"
             ;;
         :)

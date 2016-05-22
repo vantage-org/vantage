@@ -1,16 +1,32 @@
 #!/bin/bash
 set -e
 
+function print_env {
+    here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+    env --ignore-environment "$here/cave" "$1"
+}
+
 case "$#" in
     0)
         # Print entire env
-        here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-        env --ignore-environment "$here/cave" "$VG_ENV_FILE"
+        print_env "$VG_ENV_FILE"
         ;;
     1)
         # Print value of variable
         var="$1"
         echo "${!var}"
+        ;;
+    2)
+        # Save value to env file
+        ENV_FILE="$VG_DEFAULT_ENV"
+        if [ -n "$VG_NAMED_ENV" ]; then
+            ENV_FILE="$VG_NAMED_ENV"
+        fi
+        if [ -n "$ENV_FILE" ]; then
+            echo "$1=$2" >> "$ENV_FILE"
+            ENV=$(print_env "$ENV_FILE")
+            echo "$ENV" > "$ENV_FILE"
+        fi
         ;;
     *)
         echo "vantage: __env: Too many arguments"
