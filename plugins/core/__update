@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    ""|vantage|vg)
+        D="$VG_INSTALL_DIR"
+        ;;
+    *)
+        D="$VG_INSTALL_DIR/plugins/installed/$1"
+        if [ ! -d "$D" ]; then
+            echo "vantage: __update: Plugin directory for $1 not found" >&2
+            exit 1
+        fi
+        ;;
+esac
+
+cd "$D"
+git fetch --all
+git reset --hard origin/master
+cd - > /dev/null
