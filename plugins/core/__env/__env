@@ -1,10 +1,32 @@
 #!/bin/bash
 set -e
 
+function help {
+    cat << EOF >&2
+vantage: __env: usage: vantage __env [NAME [VALUE]]
+
+Running 'vg __env' will print the environment available in the compiled
+environment file. To see the entire environment run the usual 'env' command:
+'vg env'.
+
+Running 'vg __env NAME' will echo the value of the variable NAME
+
+Running 'vg __env NAME VALUE' will save NAME=VALUE into an env file. If one is
+named using the '-e ENV_FILE' flag then it will be stored there, if not the
+default env file (if set) will be used.
+
+EOF
+}
+
 function print_env {
     here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
     env --ignore-environment "$here/cave" "$1"
 }
+
+if [ -n "$VG_SHOW_HELP" ]; then
+    help
+    exit
+fi
 
 case "$#" in
     0)
@@ -29,6 +51,7 @@ case "$#" in
         fi
         ;;
     *)
-        echo "vantage: __env: Too many arguments"
+        echo "vantage: __env: Too many arguments" >&2
+        help
         exit 1
 esac
