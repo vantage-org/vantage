@@ -3,9 +3,9 @@ set -e
 
 function help {
     cat << EOF >&2
-vantage: __update: usage: vantage __update [PLUGIN_NAME]
+usage: vantage __update [PLUGIN_NAME]
 
-Running 'vg __update' will update vantage core by running 'git fetch' and then 
+Running 'vg __update' will update vantage core by running 'git fetch' and then
 'git reset --hard'
 
 Running 'vg __update NAME' will update the installed plugin (using git as for

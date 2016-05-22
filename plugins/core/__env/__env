@@ -3,7 +3,7 @@ set -e
 
 function help {
     cat << EOF >&2
-vantage: __env: usage: vantage __env [NAME [VALUE]]
+usage: vantage __env [NAME [VALUE]]
 
 Running 'vg __env' will print the environment available in the compiled
 environment file. To see the entire environment run the usual 'env' command:
