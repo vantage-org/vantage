@@ -7,8 +7,6 @@ A developer's build tool that cares about your environment.
 
 `vantage` is downloaded and updated using git, so you'll need that installed before the bootstrap script will work.
 
-The `vantage` core scripts and plugins are written for the `fish` shell. You'll need that too before it will work. Your scripts don't have to be fishy, but you'll need it installed all the same.
-
 ## Motivation
 
 Config and sensitive data should be kept in the environment. Your app should be able to be dropped into a new machine with a new environment and pick up all the things it needs. This is one of the 12-factors.
@@ -31,22 +29,23 @@ First, run the bootstrap script to install `vantage` into `/usr/local/vantage`. 
 
 Let's explore what's possible:
 
-    $ vg help
-    Usage: vantage [--env|-e ENV_FILE [...]] [--var|-v KEY=VALUE [...]] [--app|-a APP_DIR [...]] COMMAND
+    $ vg -h
+    usage: vantage [-h] [-a APP_DIR] [-e ENV_FILE]... [-v KEY=VALUE]... COMMAND
 
-    For more information see the GitHub repo: https://github.com/vantage-org/vantage
-    Or run `vantage help COMMAND`
+        -h - Show the help text for COMMAND (if it is a vantage plugin)
+        -a - Set the app directory
+        -e - Add an env file to the environment
+        -v - Add a single variable to the environment
 
     Commands:
-      config - Read and write vantage config values
-      env - Read and write your app's environment values
-      help - Print help on using vantage
-      hw - Say hello world
-      plugins - Manage vantage plugins
-      test - Run vantage tests
-      update - Update vantage and plugins
+        __env - Read and write your app's environment values
+        __plugins - Manage vantage plugins
+        __update - Update vantage and it's plugins
+        * - Any other command at all
 
-You can use the `help` command to learn more about each command. Before you customise `vantage` to your own project, the default installation comes with some 'dogfood' plugins that we can use now to explore how things work:
+    See the GitHub repo for more details (https://github.com/vantage-org/vantage)
+
+You can use the `-h` flag to learn more about each command. Before you customise `vantage` to your own project, the default installation comes with some 'dogfood' plugins that we can use now to explore how things work:
 
     $ vantage hw
     Hello World!
@@ -62,15 +61,15 @@ We can also put our environment in a file and refer to the file instead:
     $ vantage --env .env hw
     Hello Everyone!
 
-We can also use some config values to change the greeting:
+We can also set the env in the `.vantage` file:
 
     $ echo "VG_HW_GREETING=Salut" > .vantage
     $ vantage hw
     Salut World!
 
-And we can use the config file to set a default environment:
+And we can use the `.vantage` file to set a default environment:
 
-    $ echo "VG_DEFAULT_ENV=.env" > .vantage
+    $ echo "VG_DEFAULT_ENV=.env" >> .vantage
     $ vantage hw
     Salut Everyone!
 
@@ -84,6 +83,6 @@ There are some 'official' plugins that you'll find in the vantage-org GitHub org
 
 ## Contributing
 
-Please! Please do! Fork and PR to your heart's content. `vantage` was built very slowly in my spare time. Mostly as an exercise to learn Docker and fish-shell. I'm sure there are lots of bugs and lots of silly bits of code.
+Please! Please do! Fork and PR to your heart's content. `vantage` was built very slowly in my spare time. I'm sure there are lots of bugs and lots of silly bits of code.
 
 If you can't contribute directly then please open an issue. Feature requests, bug reports, all kinds of things are welcome.

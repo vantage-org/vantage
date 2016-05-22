@@ -35,12 +35,16 @@ function help {
     cat << EOF >&2
 usage: vantage [-h] [-a APP_DIR] [-e ENV_FILE]... [-v KEY=VALUE]... COMMAND
 
--h Show the help text for COMMAND (if it is a vantage plugin)
--a Set the app directory
--e Add an env file to the environment
--v Add a single variable to the environment
+    -h - Show the help text for COMMAND (if it is a vantage plugin)
+    -a - Set the app directory
+    -e - Add an env file to the environment
+    -v - Add a single variable to the environment
 
-COMMAND Any command to be executed inside the environment created by vantage.
+Commands:
+    __env - Read and write your app's environment values
+    __plugins - Manage vantage plugins
+    __update - Update vantage and it's plugins
+    * - Any other command at all
 
 See the GitHub repo for more details (https://github.com/vantage-org/vantage)
 
@@ -200,6 +204,9 @@ load_env
 
 if [ -z "$(type -t $1)" ]; then
     # The command isn't available for bash to execute
+    if [ -z "$VG_PLUGIN_PATH" ]; then
+        VG_PLUGIN_PATH="$VG_INSTALL_DIR/plugins/dogfood"
+    fi
     PLUGIN_PATHS="$VG_PLUGIN_PATH $VG_INSTALL_DIR/plugins/core $VG_INSTALL_DIR/plugins/installed"
     for path in $PLUGIN_PATHS; do
         CMD=$(find_script "$path" "$@")
