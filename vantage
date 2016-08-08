@@ -69,7 +69,7 @@ unset OPTIND
 script_path="${BASH_SOURCE[0]}"
 if [ -L "$script_path" ]; then
     # If we're a symlink then follow it
-    install_dir=$(cd "$(dirname "$(readlink -f "$script_path")")" && pwd)
+    install_dir=$(cd "$(dirname "$(perl -MCwd -le 'print Cwd::abs_path(shift)' "$script_path")")" && pwd)
 else
     install_dir=$(cd "$(dirname "$script_path")" && pwd)
 fi
