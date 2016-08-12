@@ -197,24 +197,20 @@ unset OPTIND
 
 shift "$(expr $MAXOPTIND - 1 )"
 
-
 load_env
 
 # Step Three: Try to find something to run
 
-if [ -z "$(type -t $1)" ]; then
-    # The command isn't available for bash to execute
-    if [ -z "$VG_PLUGIN_PATH" ]; then
-        VG_PLUGIN_PATH="$VG_INSTALL_DIR/plugins/dogfood"
-    fi
-    PLUGIN_PATHS="$VG_PLUGIN_PATH $VG_INSTALL_DIR/plugins/core $VG_INSTALL_DIR/plugins/installed"
-    for path in $PLUGIN_PATHS; do
-        CMD=$(find_script "$path" "$@")
-        if [ -n "$CMD" ]; then
-            break
-        fi
-    done
+if [ -z "$VG_PLUGIN_PATH" ]; then
+    VG_PLUGIN_PATH="$VG_INSTALL_DIR/plugins/dogfood"
 fi
+PLUGIN_PATHS="$VG_PLUGIN_PATH $VG_INSTALL_DIR/plugins/core $VG_INSTALL_DIR/plugins/installed"
+for path in $PLUGIN_PATHS; do
+    CMD=$(find_script "$path" "$@")
+    if [ -n "$CMD" ]; then
+        break
+    fi
+done
 
 if [ -z "$CMD" ]; then
     if [ -n "$VG_SHOW_HELP" ]; then
