@@ -20,7 +20,7 @@ EOF
 
 function print_env {
     here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-    env --ignore-environment "$here/cave" "$1"
+    env -i "$here/cave" "$1"
 }
 
 if [ -n "$VG_SHOW_HELP" ]; then
