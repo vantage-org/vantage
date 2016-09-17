@@ -34,7 +34,7 @@ case "$1" in
         fi
         set -e
         cd "$VG_INSTALL_DIR/plugins/installed"
-        git clone "$name" --recursive
+        git clone -b back-to-bash "$name" --recursive
         cd - > /dev/null
         ;;
     uninstall|remove|rm)
