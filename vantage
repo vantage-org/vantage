@@ -5,7 +5,11 @@
 function load_env {
     e=$(cat "$VG_ENV_FILE")
     if [ -n "$e" ]; then
+        OLD_IFS="$IFS"
+        IFS='
+'
         export $(echo "$e" | xargs)
+        IFS="$OLD_IFS"
     fi
 }
 
