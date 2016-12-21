@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-cd /vagrant/tests
+cd "$VG_APP_DIR/tests"
 
-env --ignore-environment ./test.sh
+env -i ./test.sh
 
 cd -
