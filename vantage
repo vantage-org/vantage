@@ -118,12 +118,6 @@ if [ -z "$VG_APP_DIR" ]; then
     export VG_APP_DIR="$PWD"
 fi
 
-# Use app dir as the env dir if there isn't one set
-if [ -z "$VG_ENV_DIR" ]; then
-    export VG_ENV_DIR="$VG_APP_DIR"
-fi
-
-
 # Step Two: Compile the environment
 
 # We might be a child process of another vantage call, save the parent ENV file
@@ -143,10 +137,14 @@ else
         cat "$VG_APP_DIR/.vantage" >> "$VG_ENV_FILE"
         load_env
     fi
+    # Use app dir as the env dir if there isn't one set
+    if [ -z "$VG_ENV_DIR" ]; then
+        export VG_ENV_DIR="$VG_APP_DIR"
+    fi
     # Try to find a default env, load that
     if [ -n "$VG_DEFAULT_ENV" ]; then
         cat "$VG_DEFAULT_ENV" >> "$VG_ENV_FILE"
-        export $(cat "$VG_ENV_FILE" | xargs)
+        load_env
     fi
 fi
 
