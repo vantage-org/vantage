@@ -5,15 +5,13 @@ function help {
     cat << EOF >&2
 usage: vantage __env [NAME [VALUE]]
 
-Running 'vg __env' will print the environment available in the compiled
-environment file. To see the entire environment run the usual 'env' command:
-'vg env'.
+Commands:
 
-Running 'vg __env NAME' will echo the value of the variable NAME
+    vg __env - Print the current environment
+    vg __env NAME - Print the value of a single variable
+    vg __end NAME VALUE - Save an env variable
 
-Running 'vg __env NAME VALUE' will save NAME=VALUE into an env file. If one is
-named using the '-e ENV_FILE' flag then it will be stored there, if not the
-default env file (if set) will be used.
+See the GitHub repo for more details (https://github.com/vantage-org/vantage)
 
 EOF
 }

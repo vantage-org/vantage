@@ -5,13 +5,13 @@ function help {
     cat << EOF >&2
 usage: vantage __plugins list|install|uninstall [PLUGIN_NAME]
 
-Running 'vg __plugins list' will list every installed plugin on your system
+Commands:
 
-Running 'vg __plugins install PLUGIN_NAME' will install the named plugin to the
-vantage plugin directory. PLUGIN_NAME can be the name of an official vantage
-plugin, or a git url that will be cloned.
+    vg __plugins list - List all installed plugins
+    vg __plugins install NAME - Install a plugin
+    vg __plugins uninstall NAME - Uninstall a plugin
 
-Running 'vg __plugins uninstall PLUGIN_NAME' will remove the named plugin.
+See the GitHub repo for more details (https://github.com/vantage-org/vantage)
 
 EOF
 }

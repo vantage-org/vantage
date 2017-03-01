@@ -5,11 +5,16 @@ function help {
     cat << EOF >&2
 usage: vantage __update [PLUGIN_NAME]
 
-Running 'vg __update' will update vantage core by running 'git fetch' and then
-'git reset --hard'
+Vantage and its plugins are installed and updated using git. Performing an
+update simply runs 'git fetch' and 'git reset --hard' on the installation
+folder.
 
-Running 'vg __update NAME' will update the installed plugin (using git as for
-core updates)
+Commands:
+
+    vg __update - Update vantage itself
+    vg __update NAME - Update the named plugin
+
+See the GitHub repo for more details (https://github.com/vantage-org/vantage)
 
 EOF
 }
