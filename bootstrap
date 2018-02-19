@@ -11,5 +11,11 @@ echo "Linking script to /usr/local/bin/..."
 ln -s /usr/local/vantage/vantage /usr/local/bin/vantage
 ln -s /usr/local/vantage/vantage /usr/local/bin/vg
 
+if [ -d /etc/bash_completion.d ]; then
+    echo "Linking bash completion script to /etc/bash_completion.d"
+    ln -s /usr/local/vantage/complete /etc/bash_completion.d/vantage
+    ln -s /usr/local/vantage/complete /etc/bash_completion.d/vg
+fi
+
 echo "Done!"
 echo "Run 'vantage -h' to see what to do now :)"
