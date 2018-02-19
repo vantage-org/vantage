@@ -1,0 +1,23 @@
+#!/bin/bash
+
+function _complete {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ ${prev} == -e ]] ; then
+        opts=$(vantage __list_env_files)
+        COMPREPLY=( $(compgen -W "$opts" -- ${cur}) )
+        return 0
+    elif [[ ${prev} == -v ]] || [[ ${prev} == -a ]] ; then
+        # Don't complete a variable declaration or app setting
+        return 0
+    else
+        opts=$(vantage __list_scripts "${COMP_WORDS[@]:1}")
+        COMPREPLY=( $(compgen -W "$opts" -- ${cur}) )
+        return 0
+    fi
+}
+complete -F _complete 'vantage'
+complete -F _complete 'vg'
