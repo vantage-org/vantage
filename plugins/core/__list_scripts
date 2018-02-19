@@ -1,0 +1,83 @@
+#!/bin/bash
+
+function help {
+    cat << EOF >&2
+usage: vantage __list_scripts [COMMAND_TO_COMPLETE]
+
+List all of the scripts available to run.
+
+This is used for bash completion so the arguments you pass it can be any valid
+vantage options, arguments, and commands, without the 'vantage' or 'vg' as the
+first command.
+
+e.g. vg __list_scripts -h __plugins
+
+EOF
+}
+
+if [ -n "$VG_SHOW_HELP" ]; then
+    help
+    exit
+fi
+
+# find_scripts PATH
+function find_scripts {
+    files=$(ls "$1")
+    for f in $files; do
+        if [ -f "$1/$f" ] && [ -x "$1/$f" ]; then
+            # Regular executable file
+            echo "$f"
+        fi
+        if [ -f "$1/$f/$f" ] && [ -x "$1/$f/$f" ]; then
+            # Script inside a directory with the same name
+            echo "$f"
+        elif [ -d "$1/$f" ] && [ $(basename "$1") != $f ]; then
+            # Directory that might contain scripts
+            echo "$f"
+        fi
+    done
+}
+
+function join_by {
+    local IFS="$1"
+    shift
+    echo "$*"
+}
+
+function clean_args {
+    while [ "$#" -gt 0 ]; do
+        # To remove any options arguments passed in
+        case $1 in
+            (-h) shift;;
+            (-[aev]) shift 2;;
+            (*) break;;
+        esac
+    done
+    echo $*
+}
+
+if [ -z "$VG_PLUGIN_PATH" ]; then
+    VG_PLUGIN_PATH="$VG_INSTALL_DIR/plugins/dogfood"
+fi
+PLUGIN_PATHS="$VG_PLUGIN_PATH $VG_INSTALL_DIR/plugins/core $VG_INSTALL_DIR/plugins/installed"
+
+ARGS=$(clean_args $@)
+
+FOUND=false
+for path in $PLUGIN_PATHS; do
+    path="$path/$(join_by / $ARGS)"
+    if [ -d "$path" ]; then
+        find_scripts "$path"
+        FOUND=true
+    elif [ -f "$path" ] && [ -x "$path" ]; then
+        FOUND=true
+    fi
+done
+if ! $FOUND; then
+    for path in $PLUGIN_PATHS; do
+        path=$(dirname "$path/$(join_by / $ARGS)")
+        if [ -d "$path" ]; then
+            find_scripts "$path"
+        fi
+    done
+fi
