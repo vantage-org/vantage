@@ -1,4 +1,4 @@
-.vantage
-.vagrant
-.env
-.bundle
+__pycache__
+/vantage.egg-info
+/venv
+/bak
