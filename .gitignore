@@ -2,3 +2,7 @@ __pycache__
 /vantage.egg-info
 /venv
 /bak
+/build
+.DS_Store
+/dist
+/vantage.spec

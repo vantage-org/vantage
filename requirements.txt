@@ -1,15 +1,18 @@
+altgraph==0.16.1
 atomicwrites==1.3.0
 attrs==19.1.0
 Click==7.0
 importlib-metadata==0.23
+macholib==1.11
 more-itertools==7.2.0
 packaging==19.2
 pluggy==0.13.0
 py==1.8.0
+PyInstaller==3.5
 pyparsing==2.4.2
 pytest==5.1.2
 sh==1.12.14
 six==1.12.0
--e git+https://WilliamMayor@github.com/vantage-org/vantage.git@b349b97e5504a978bf74099b2667cf33fbc446ba#egg=vantage
+-e git+https://WilliamMayor@github.com/vantage-org/vantage.git@b7e9d8899d7fcbc4fa4d7b9e991d650fb015a38b#egg=vantage
 wcwidth==0.1.7
 zipp==0.6.0
