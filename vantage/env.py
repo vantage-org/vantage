@@ -2,7 +2,7 @@ from pathlib import Path
 
 import click
 
-from . import utils
+from vantage import utils
 
 
 @click.command(name="__env")

@@ -1,11 +1,12 @@
+import sys
 import os
 from pathlib import Path
 
 import click
 
-from . import utils
-from .env import env as env_cmd
-from .shell import shell as shell_cmd
+from vantage import utils
+from vantage.env import env as env_cmd
+from vantage.shell import shell as shell_cmd
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
