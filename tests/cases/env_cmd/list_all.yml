@@ -1,0 +1,6 @@
+invoke: --var FOO=BAR __env
+
+post:
+  stdout:
+    - VG_APP_DIR=$BASE
+    - FOO=BAR

@@ -11,8 +11,9 @@ py==1.8.0
 PyInstaller==3.5
 pyparsing==2.4.2
 pytest==5.1.2
+PyYAML==5.1.2
 sh==1.12.14
 six==1.12.0
--e git+https://WilliamMayor@github.com/vantage-org/vantage.git@b7e9d8899d7fcbc4fa4d7b9e991d650fb015a38b#egg=vantage
+-e git+https://WilliamMayor@github.com/vantage-org/vantage.git@a5cdae42e7f97839ae3c82ab935614c667b5276c#egg=vantage
 wcwidth==0.1.7
 zipp==0.6.0

@@ -1,0 +1,6 @@
+invoke: --env test __env FOO=BAR
+
+post:
+  files:
+    test:
+      - FOO=BAR

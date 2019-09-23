@@ -1,0 +1,6 @@
+invoke: __env FOO=BAR
+
+post:
+  code: 1
+  stderr:
+    - "Error: No env file provided, there's nowhere to store this value"

@@ -1,0 +1,10 @@
+pre:
+  files:
+    env_file:
+      - FOO=base64:QkFS
+
+invoke: --env env_file __env
+
+post:
+  stdout:
+    - FOO=BAR

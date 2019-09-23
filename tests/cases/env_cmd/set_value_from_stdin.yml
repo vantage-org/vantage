@@ -1,0 +1,8 @@
+
+stdin: BAR
+invoke: --env test __env --stdin FOO
+
+post:
+  files:
+    test:
+      - FOO=BAR

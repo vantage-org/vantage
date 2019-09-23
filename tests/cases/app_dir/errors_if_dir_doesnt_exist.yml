@@ -1,0 +1,6 @@
+invoke: --app /not-a-dir __env
+
+post:
+  code: 1
+  stderr:
+    - "Error: App directory '/not-a-dir' does not exist"

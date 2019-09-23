@@ -1,0 +1,5 @@
+invoke: --var FOO=BAR __env FOO
+
+post:
+  stdout:
+    - BAR

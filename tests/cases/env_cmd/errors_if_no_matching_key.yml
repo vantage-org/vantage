@@ -1,0 +1,6 @@
+invoke: __env FOO
+
+post:
+  code: 1
+  stderr:
+    - "Error: No value found for 'FOO'"

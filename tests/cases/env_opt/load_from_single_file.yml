@@ -1,0 +1,10 @@
+pre:
+  files:
+    env_file:
+      - FOO=BAR
+
+invoke: --env env_file __env
+
+post:
+  stdout:
+    - FOO=BAR

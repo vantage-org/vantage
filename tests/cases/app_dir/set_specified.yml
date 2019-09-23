@@ -1,0 +1,5 @@
+invoke: --app /usr/local/ __env
+
+post:
+  stdout:
+    - VG_APP_DIR=/usr/local

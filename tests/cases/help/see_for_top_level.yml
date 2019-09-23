@@ -1,0 +1,5 @@
+invoke: --help
+
+post:
+  stdout:
+    - "Usage: vantage [OPTIONS] COMMAND [ARGS]..."
