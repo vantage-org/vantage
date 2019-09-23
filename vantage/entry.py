@@ -1,4 +1,3 @@
-import sys
 import os
 from pathlib import Path
 
@@ -97,10 +96,7 @@ def get_env_vars_from_var_options(var):
             key, val = key_val.split("=", 1)
         else:
             key = key_val
-            if utils.has_stdin():
-                val = click.get_text_stream("stdin").read().strip()
-            else:
-                val = click.prompt(f"Input required {key}=", prompt_suffix="")
+            val = click.prompt(f"Input required {key}=", prompt_suffix="")
         val = utils.from_base64(val.strip())
         yield key, val
 
