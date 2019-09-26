@@ -1,6 +1,0 @@
-invoke: --env test __env --base64 FOO=BAR
-
-post:
-  files:
-    test:
-      - FOO=base64:QkFS

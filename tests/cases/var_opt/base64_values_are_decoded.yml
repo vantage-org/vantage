@@ -1,5 +1,0 @@
-invoke: --var FOO=base64:QkFS __env
-
-post:
-  stdout:
-    - FOO=BAR

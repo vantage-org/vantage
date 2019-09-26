@@ -1,6 +1,0 @@
-stdin: BAR
-invoke: --var FOO __env
-
-post:
-  stdout:
-    - FOO=BAR

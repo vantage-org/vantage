@@ -1,20 +1,29 @@
+import shutil
 from pathlib import Path
 
-import yaml
+import sh
+import pytest
 
 
-def pytest_generate_tests(metafunc):
-    if "case" in metafunc.fixturenames:
-        cases = []
-        names = []
-        for case in Path("./tests/cases/").glob("**/*.yml"):
-            with case.open() as f:
-                details = yaml.load(f, Loader=yaml.SafeLoader)
-                cases.append(details)
-                name = []
-                parent = case
-                while str(parent.stem) != "cases":
-                    name.append(str(parent.stem))
-                    parent = parent.parent
-                names.append("-".join(reversed(name)))
-        metafunc.parametrize("case", cases, ids=names)
+@pytest.fixture
+def result(tmpdir, request):
+    dir_ = Path(request.fspath).parent
+    tdir = Path(tmpdir)
+    workdir = shutil.copytree(dir_, tdir / "case")
+    try:
+        res = sh.sh(f"{workdir}/run.sh", _cwd=workdir)
+    except sh.ErrorReturnCode as erc:
+        res = erc
+    res.stdout_ = res.stdout.decode("utf-8").strip()
+    res.stderr_ = res.stderr.decode("utf-8").strip()
+    return res
+
+
+@pytest.fixture
+def get_file(tmpdir):
+
+    def getter(path):
+        f = Path(tmpdir) / "case" / path
+        return f.read_text().strip()
+
+    return getter
