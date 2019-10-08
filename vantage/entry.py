@@ -44,8 +44,14 @@ class VantageCLI(click.MultiCommand):
 @click.option(
     "-v", "--var", multiple=True, help="Add a single variable to the environment"
 )
+@click.option(
+    "--verbose",
+    is_flag=True,
+    default=False,
+    help="Print verbose debug messages to stdout",
+)
 @click.pass_context
-def vantage(ctx, app=None, env=tuple(), var=tuple()):
+def vantage(ctx, app=None, env=tuple(), var=tuple(), verbose=False):
     """Run CMD with environment variables
 
     \b
@@ -57,9 +63,15 @@ def vantage(ctx, app=None, env=tuple(), var=tuple()):
         * - Any other command at all
 
     See the GitHub repo for more details (https://github.com/vantage-org/vantage)"""
-    app = find_app(app)
-    env_vars = get_env_vars(app, env, var)
-    ctx.obj = env_vars
+    if ctx.obj is None:
+        app = find_app(app)
+        env_vars = get_env_vars(app, env, var)
+        env_vars.setdefault("VG_VERBOSE", "1" if verbose else "")
+        if env_vars["VG_VERBOSE"]:
+            utils.loquacious("Compiled ENV is:")
+            for key, val in env_vars.items():
+                utils.loquacious(f"  {key}={val}")
+        ctx.obj = env_vars
 
 
 def find_app(path=None):

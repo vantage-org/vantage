@@ -1,6 +1,8 @@
 import binascii
 import base64
 
+import click
+
 
 def to_base64(value):
     value = base64.urlsafe_b64encode(value.encode("utf-8")).decode("utf-8")
@@ -14,3 +16,8 @@ def from_base64(value):
         except binascii.Error:
             pass
     return value
+
+
+def loquacious(line, env=None):
+    if env is None or env.get("VG_VERBOSE"):
+        click.echo(f"LOG: {line}")
