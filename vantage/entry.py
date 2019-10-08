@@ -3,9 +3,11 @@ from pathlib import Path
 
 import click
 
-from vantage import utils
+from vantage import utils, task
 from vantage.env import env as env_cmd
+from vantage.plugins import plugins as plugins_cmd
 from vantage.shell import shell as shell_cmd
+from vantage.update import update as update_cmd
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -16,8 +18,20 @@ class VantageCLI(click.MultiCommand):
         return ["__env", "__plugins", "__update"]
 
     def get_command(self, ctx, name):
+        # Invoke here to get the ctx populated
+        click.Command.invoke(self, ctx)
+        # First try vantage builtins
         if name == "__env":
             return env_cmd
+        if name == "__plugins":
+            return plugins_cmd
+        if name == "__update":
+            return update_cmd
+        # Then a project task file or an installed plugin task file
+        task_ = task.get_task(ctx.obj, name)
+        if task_:
+            return task_
+        # Fallback to shelling out
         params = [click.Argument(("args",), nargs=-1, required=False)]
         return click.Command(name, params=params, callback=shell_cmd)
 
