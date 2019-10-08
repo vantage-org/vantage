@@ -23,6 +23,7 @@ def task_cmd(ctx, path, run_required=None, keep_image=None):
     env = ctx.obj
     utils.loquacious(f"Running task in {path}", env=env)
     meta = load_meta(path, env=env)
+    env = update_env(meta, env)
     run_required = get_flag(
         opt=run_required,
         env=env.get("VG_RUN_REQUIRED"),
@@ -87,6 +88,17 @@ def load_meta(path, env):
             utils.loquacious(f"  Meta commented out using '{comment_marker}'", env=env)
             meta = meta.replace(f"\n{comment_marker}", "\n")
             return yaml.load(meta, Loader=yaml.SafeLoader)
+
+
+def update_env(meta, env):
+    env_vars = meta.get("variables")
+    if env_vars is not None:
+        if env["VG_VERBOSE"]:
+            utils.loquacious("  Updating env with vars in task meta")
+            for key, val in env_vars.items():
+                utils.loquacious(f"    {key}={val}")
+        env.update(env_vars)
+    return env
 
 
 def get_flag(opt, env, yml, default):

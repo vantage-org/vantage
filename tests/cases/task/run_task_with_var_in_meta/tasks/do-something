@@ -1,0 +1,6 @@
+#!/bin/bash
+# ---
+# variables:
+#   SOMETHING: 'something!'
+# ---
+echo "$SOMETHING"
