@@ -14,12 +14,18 @@ def as_command(path):
     params = [
         click.Option(("--run-required/--skip-required",)),
         click.Option(("--keep-image/--rm-image",)),
+        click.Argument(("args",), nargs=-1, type=click.UNPROCESSED),
     ]
-    return click.Command("task", params=params, callback=partial(task_cmd, path=path))
+    return click.Command(
+        "task",
+        params=params,
+        callback=partial(task_cmd, path=path),
+        context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
+    )
 
 
 @click.pass_context
-def task_cmd(ctx, path, run_required=None, keep_image=None):
+def task_cmd(ctx, path, args, run_required=None, keep_image=None):
     env = ctx.obj
     utils.loquacious(f"Running task in {path}", env=env)
     meta = load_meta(path, env=env)
@@ -52,6 +58,7 @@ def task_cmd(ctx, path, run_required=None, keep_image=None):
     try:
         cmd = sh.Command(str(path))
         cmd(
+            *args,
             _out=click.get_text_stream("stdout"),
             _err=click.get_text_stream("stderr"),
             _in=click.get_text_stream("stdin"),
