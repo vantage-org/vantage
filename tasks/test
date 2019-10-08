@@ -1,0 +1,11 @@
+#!/bin/sh
+# ---
+# requires:
+#   - init
+# ---
+(
+    cd "$VG_APP_DIR" || exit 1
+    . venv/bin/activate
+    cd tests/cases || exit 1
+    pytest --basetemp="$VG_APP_DIR/tests/tmp" "$@"
+)

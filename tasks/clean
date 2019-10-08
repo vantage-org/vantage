@@ -1,0 +1,2 @@
+#!/bin/sh
+rm -rf dist build tests/tmp vantage.spec
