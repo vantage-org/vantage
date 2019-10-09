@@ -1,4 +1,7 @@
 #!/bin/sh
+# ---
+# help-text: Initialise the project, create a venv and install deps
+# ---
 if [ ! -d venv ]
 then
   python3 -m venv venv

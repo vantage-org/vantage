@@ -6,26 +6,31 @@ from vantage import utils
 
 
 @click.command(name="__env")
-@click.option("-b", "--base64", is_flag=True)
-@click.option("-s", "--stdin", is_flag=True)
+@click.option(
+    "-b", "--base64", is_flag=True, help="When setting a var convert it to base64 first"
+)
+@click.option(
+    "-s", "--stdin", is_flag=True, help="When setting a var read the value from stdin"
+)
 @click.argument("key_val", required=False)
 @click.pass_obj
 def env(env, key_val=None, base64=False, stdin=False):
-    utils.loquacious("Running __env", env=env)
+    """Read and set environment variables and files"""
+    utils.loquacious("Running __env")
     if key_val is None:
-        utils.loquacious("  Printing ENV", env=env)
+        utils.loquacious("  Printing ENV")
         for k, v in env.items():
             click.echo(f"{k}={v}")
     elif "=" in key_val:
-        utils.loquacious("  Setting ENV value", env=env)
+        utils.loquacious("  Setting ENV value")
         key, val = key_val.split("=", 1)
         write_env_value(env, key, val, base64)
     elif stdin:
-        utils.loquacious("  Setting ENV value from stdin", env=env)
+        utils.loquacious("  Setting ENV value from stdin")
         val = click.get_text_stream("stdin").read().strip()
         write_env_value(env, key_val, val, base64)
     else:
-        utils.loquacious("  Printing single ENV value", env=env)
+        utils.loquacious("  Printing single ENV value")
         try:
             value = env[key_val]
             click.echo(value)
@@ -36,7 +41,7 @@ def env(env, key_val=None, base64=False, stdin=False):
 def write_env_value(env, key, value, base64=False):
     try:
         env_file = Path(env["VG_ENV_FILE"])
-        utils.loquacious(f"  Adding {key}={value} to {env_file}", env=env)
+        utils.loquacious(f"  Adding {key}={value} to {env_file}")
         with env_file.open("a") as fp:
             if base64:
                 value = utils.to_base64(value)

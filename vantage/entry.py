@@ -15,7 +15,10 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 class VantageCLI(click.MultiCommand):
 
     def list_commands(self, ctx):
-        return ["__env", "__plugins", "__update"]
+        # Invoke here to get the ctx populated
+        click.Command.invoke(self, ctx)
+        tasks = task.get_task_names(ctx.obj)
+        return list(tasks) + ["__env", "__plugins", "__update"]
 
     def get_command(self, ctx, name):
         # Invoke here to get the ctx populated
@@ -39,7 +42,11 @@ class VantageCLI(click.MultiCommand):
 @click.command(
     cls=VantageCLI, context_settings=CONTEXT_SETTINGS, invoke_without_command=True
 )
-@click.option("-a", "--app", help="Set the app directory")
+@click.option(
+    "-a",
+    "--app",
+    help="Set the app directory, the base dir from which every command is run",
+)
 @click.option("-e", "--env", multiple=True, help="Add an env file to the environment")
 @click.option(
     "-v", "--var", multiple=True, help="Add a single variable to the environment"
@@ -52,17 +59,11 @@ class VantageCLI(click.MultiCommand):
 )
 @click.pass_context
 def vantage(ctx, app=None, env=tuple(), var=tuple(), verbose=False):
-    """Run CMD with environment variables
+    """Run COMMAND inside a dynamic environment
 
     \b
-    CMD can be:
-        __env - Read and write your app's environment values
-        __plugins - Manage vantage plugins
-        __update - Update vantage and it's plugins
-        TASK - The name of a task in your tasks directory
-        * - Any other command at all
-
-    See the GitHub repo for more details (https://github.com/vantage-org/vantage)"""
+    See the GitHub repo for more details:
+    https://github.com/vantage-org/vantage"""
     if ctx.obj is None:
         app = find_app(app)
         env_vars = get_env_vars(app, env, var)

@@ -1,6 +1,6 @@
 import sys
 import os
-from functools import partial
+from functools import partial, lru_cache
 from pathlib import Path
 
 import click
@@ -10,25 +10,11 @@ import yaml
 from vantage import utils
 
 
-def as_command(path):
-    params = [
-        click.Option(("--run-required/--skip-required",)),
-        click.Option(("--keep-image/--rm-image",)),
-        click.Argument(("args",), nargs=-1, type=click.UNPROCESSED),
-    ]
-    return click.Command(
-        "task",
-        params=params,
-        callback=partial(task_cmd, path=path),
-        context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
-    )
-
-
 @click.pass_context
 def task_cmd(ctx, path, args, run_required=None, keep_image=None):
     env = ctx.obj
-    utils.loquacious(f"Running task in {path}", env=env)
-    meta = load_meta(path, env=env)
+    utils.loquacious(f"Running task in {path}")
+    meta = load_meta(path)
     env = update_env(meta, env)
     run_required = get_flag(
         opt=run_required,
@@ -42,19 +28,19 @@ def task_cmd(ctx, path, args, run_required=None, keep_image=None):
         yml=meta.get("keep-image"),
         default=False,
     )
-    utils.loquacious(f"  Run required? {'YES' if run_required else 'NO'}", env=env)
-    utils.loquacious(f"  Keep image? {'YES' if keep_image else 'NO'}", env=env)
+    utils.loquacious(f"  Run required? {'YES' if run_required else 'NO'}")
+    utils.loquacious(f"  Keep image? {'YES' if keep_image else 'NO'}")
     if run_required:
         for required in meta.get("requires", []):
-            utils.loquacious(f"  Running required task: {required}", env=env)
+            utils.loquacious(f"  Running required task: {required}")
             t = get_task(env, required)
             resp = t.invoke(ctx)
-            utils.loquacious(f"  Got resp: {resp}", env=env)
+            utils.loquacious(f"  Got resp: {resp}")
     if meta.get("image"):
         # Run image
         # sh.docker("run", etc. etc.)
         pass
-    utils.loquacious(f"  Passing task over to sh", env=env)
+    utils.loquacious(f"  Passing task over to sh")
     try:
         cmd = sh.Command(str(path))
         cmd(
@@ -66,9 +52,7 @@ def task_cmd(ctx, path, args, run_required=None, keep_image=None):
             _cwd=env["VG_APP_DIR"],
         )
     except sh.ErrorReturnCode as erc:
-        utils.loquacious(
-            f"  Something went wrong, returned exit code {erc.exit_code}", env=env
-        )
+        utils.loquacious(f"  Something went wrong, returned exit code {erc.exit_code}")
         return sys.exit(erc.exit_code)
     finally:
         if meta.get("image") and not keep_image:
@@ -77,8 +61,9 @@ def task_cmd(ctx, path, args, run_required=None, keep_image=None):
             pass
 
 
-def load_meta(path, env):
-    utils.loquacious(f"  Loading meta from task file", env=env)
+@lru_cache()
+def load_meta(path):
+    utils.loquacious(f"  Loading meta from task file")
     with path.open() as f:
         content = f.read()
         sep = None
@@ -87,12 +72,12 @@ def load_meta(path, env):
                 sep = line
                 break
         if sep is None:
-            utils.loquacious(f"  No meta found", env=env)
+            utils.loquacious(f"  No meta found")
             return {}
         else:
             _, meta, script = content.split(sep, 2)
             comment_marker = sep.replace("---", "")
-            utils.loquacious(f"  Meta commented out using '{comment_marker}'", env=env)
+            utils.loquacious(f"  Meta commented out using '{comment_marker}'")
             meta = meta.replace(f"\n{comment_marker}", "\n")
             return yaml.load(meta, Loader=yaml.SafeLoader)
 
@@ -128,6 +113,35 @@ def get_task(env, name):
                 for task_path in dir_.glob(f"{stem}*"):
                     if os.access(task_path, os.X_OK):
                         return as_command(task_path)
+
+
+@lru_cache()
+def as_command(path):
+    meta = load_meta(path)
+    params = [
+        click.Option(("--run-required/--skip-required",)),
+        click.Option(("--keep-image/--rm-image",)),
+        click.Argument(("args",), nargs=-1, type=click.UNPROCESSED),
+    ]
+    return click.Command(
+        "task",
+        callback=partial(task_cmd, path=path),
+        context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
+        params=params,
+        short_help=meta.get("help-text"),
+        help=meta.get("help-text"),
+    )
+
+
+def get_task_names(env):
+    task_dir = get_task_dir(env)
+    plugins_dir = get_plugins_dir(env)
+
+    for dir_ in (task_dir, plugins_dir):
+        if dir_.is_dir():
+            for task_path in dir_.iterdir():
+                if os.access(task_path, os.X_OK):
+                    yield task_path.stem
 
 
 def get_task_dir(env):

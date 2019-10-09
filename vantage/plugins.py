@@ -10,4 +10,5 @@ import click
 @click.command(name="__plugins")
 @click.pass_obj
 def plugins(env, args):
+    """Manage vantage plugins"""
     raise click.ClickException("Not implemented")

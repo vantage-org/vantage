@@ -18,6 +18,7 @@ def from_base64(value):
     return value
 
 
-def loquacious(line, env=None):
-    if env is None or env.get("VG_VERBOSE"):
-        click.echo(f"LOG: {line}")
+@click.pass_obj
+def loquacious(env, line):
+    if env is not None and env.get("VG_VERBOSE"):
+        click.echo(f"VG-LOG: {line}")

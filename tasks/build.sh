@@ -1,5 +1,6 @@
 #!/bin/sh
 # ---
+# help-text: Build the vantage binary
 # requires:
 #   - init
 # ---
