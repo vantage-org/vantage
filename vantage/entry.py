@@ -17,7 +17,7 @@ class VantageCLI(click.MultiCommand):
         # Invoke here to get the ctx populated
         click.Command.invoke(self, ctx)
         tasks = task.get_task_names(ctx.obj)
-        return list(tasks) + ["__env", "__plugins", "__update"]
+        return list(tasks) + ["__env", "__plugins"]
 
     def get_command(self, ctx, name):
         # Invoke here to get the ctx populated
@@ -55,13 +55,15 @@ class VantageCLI(click.MultiCommand):
     help="Print verbose debug messages to stdout",
 )
 @click.pass_context
-def vantage(ctx, app=None, env=tuple(), var=tuple(), verbose=False):
+def vantage(ctx, app=None, env=None, var=None, verbose=False):
     """Run COMMAND inside a dynamic environment
 
     \b
     See the GitHub repo for more details:
     https://github.com/vantage-org/vantage"""
     if ctx.obj is None:
+        env = env or tuple()
+        var = var or tuple()
         app = find_app(app)
         env_vars = get_env_vars(app, env, var)
         env_vars.setdefault("VG_VERBOSE", "1" if verbose else "")

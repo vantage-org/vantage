@@ -18,7 +18,13 @@ def from_base64(value):
     return value
 
 
-@click.pass_obj
-def loquacious(env, line):
-    if env is not None and env.get("VG_VERBOSE"):
-        click.echo(f"VG-LOG: {line}")
+def loquacious(line):
+    try:
+        env = click.get_current_context().obj
+        if env is not None and env.get("VG_VERBOSE"):
+            click.echo(f"VG-LOG: {line}")
+    except RuntimeError:
+        # This happens when there's no active click context so we can't get the
+        # env. In this case we default to not printing the verbose logs.
+        # This situation happens when you're trying to autocomplete
+        pass

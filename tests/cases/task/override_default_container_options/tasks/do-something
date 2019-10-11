@@ -1,0 +1,10 @@
+#!/bin/sh
+# ---
+# image:
+#   tag: busybox
+#   tty: true
+#   interactive: true
+#   volume:
+#     - "$VG_APP_DIR:/usr/src/app"
+# ---
+ls /usr/src/app

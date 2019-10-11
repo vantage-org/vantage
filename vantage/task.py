@@ -11,7 +11,7 @@ from vantage import utils
 
 
 @click.pass_context
-def task_cmd(ctx, path, args, run_required=None, keep_image=None):
+def task_cmd(ctx, path, args, run_required=None):
     env = ctx.obj
     utils.loquacious(f"Running task in {path}")
     meta = load_meta(path)
@@ -22,43 +22,70 @@ def task_cmd(ctx, path, args, run_required=None, keep_image=None):
         yml=meta.get("run-required"),
         default=False,
     )
-    keep_image = get_flag(
-        opt=keep_image,
-        env=env.get("VG_KEEP_IMAGE"),
-        yml=meta.get("keep-image"),
-        default=False,
-    )
     utils.loquacious(f"  Run required? {'YES' if run_required else 'NO'}")
-    utils.loquacious(f"  Keep image? {'YES' if keep_image else 'NO'}")
     if run_required:
         for required in meta.get("requires", []):
             utils.loquacious(f"  Running required task: {required}")
             t = get_task(env, required)
             resp = t.invoke(ctx)
             utils.loquacious(f"  Got resp: {resp}")
-    if meta.get("image"):
-        # Run image
-        # sh.docker("run", etc. etc.)
-        pass
-    utils.loquacious(f"  Passing task over to sh")
     try:
-        cmd = sh.Command(str(path))
+        tty_in = False
+        if meta.get("image"):
+            utils.loquacious(f"  Spinning up docker image")
+            cmd = sh.Command("docker")
+            image = meta.get("image")
+            run_args = [
+                "run",
+                "--volume",
+                f"{str(path)}:/vg-task",
+                "--label",
+                "vantage",
+                "--label",
+                "vantage-task",
+            ]
+            if isinstance(image, dict):
+                tty_in = bool(image.get("tty", False))
+                tag = image.pop("tag")
+                for k, v in image.items():
+                    if isinstance(v, list):
+                        for w in v:
+                            run_args += [f"--{k}", insert_env_vals(w, env)]
+                    elif isinstance(v, bool):
+                        if v:
+                            run_args += [f"--{k}"]
+                    else:
+                        run_args += [f"--{k}", insert_env_vals(v, env)]
+            else:
+                tag = image
+                run_args += ["--rm"]
+            for e in env.keys():
+                run_args += ["--env", e]
+            run_args += [tag, "/vg-task"]
+            args = run_args + list(args)
+        else:
+            utils.loquacious(f"  Passing task over to sh")
+            cmd = sh.Command(str(path))
         cmd(
             *args,
             _out=click.get_text_stream("stdout"),
             _err=click.get_text_stream("stderr"),
             _in=click.get_text_stream("stdin"),
+            _tty_in=tty_in,
             _env=env,
             _cwd=env["VG_APP_DIR"],
         )
     except sh.ErrorReturnCode as erc:
         utils.loquacious(f"  Something went wrong, returned exit code {erc.exit_code}")
         return sys.exit(erc.exit_code)
-    finally:
-        if meta.get("image") and not keep_image:
-            # Rm image
-            # sh.docker("stop", etc. etc.)
-            pass
+
+
+def insert_env_vals(str, env):
+    for k, v in env.items():
+        needle = f"${k}"
+        if needle in str:
+            str = str.replace(needle, v)
+    return str
 
 
 @lru_cache()
@@ -120,11 +147,10 @@ def as_command(path):
     meta = load_meta(path)
     params = [
         click.Option(("--run-required/--skip-required",)),
-        click.Option(("--keep-image/--rm-image",)),
         click.Argument(("args",), nargs=-1, type=click.UNPROCESSED),
     ]
     return click.Command(
-        "task",
+        path.stem,
         callback=partial(task_cmd, path=path),
         context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
         params=params,
