@@ -6,13 +6,17 @@ import pytest
 
 
 @pytest.fixture
-def run(tmpdir, request):
+def workdir(tmpdir, request):
+    dir_ = Path(request.fspath).parent
+    tdir = Path(tmpdir)
+    return shutil.copytree(dir_, tdir / "case")
+
+
+@pytest.fixture
+def run(workdir, request):
 
     def wrapper():
-        dir_ = Path(request.fspath).parent
         test_name = Path(request.fspath).stem.replace("test_", "")
-        tdir = Path(tmpdir)
-        workdir = shutil.copytree(dir_, tdir / "case")
         try:
             path = Path(workdir) / f"{test_name}.sh"
             if path.is_file():
