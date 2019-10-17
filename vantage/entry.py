@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 import click
@@ -75,6 +76,7 @@ def vantage(ctx, app=None, env=None, var=None, verbose=False):
             for key, val in env_vars.items():
                 utils.loquacious(f"  {key}={val}")
         ctx.obj = env_vars
+    click.echo(ctx.obj["VG_BINARY"])
 
 
 def find_app(path=None):
@@ -116,7 +118,14 @@ def get_env_vars(app, env, var):
             env_vars["VG_ENV_FILE"] = str(path.resolve())
     for key, val in get_env_vars_from_var_options(var):
         env_vars[key] = val
+    env_vars["VG_BINARY"] = get_binary()
     return env_vars
+
+
+def get_binary():
+    if getattr(sys, "frozen", False):
+        return sys.executable
+    return os.path.abspath(__file__)
 
 
 def get_env_vars_from_var_options(var):
