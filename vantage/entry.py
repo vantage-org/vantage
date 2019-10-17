@@ -5,6 +5,7 @@ import click
 
 from vantage import utils, task
 from vantage.env import env as env_cmd
+from vantage.init import init as init_cmd
 from vantage.plugins import plugins as plugins_cmd
 from vantage.shell import shell as shell_cmd
 
@@ -17,7 +18,7 @@ class VantageCLI(click.MultiCommand):
         # Invoke here to get the ctx populated
         click.Command.invoke(self, ctx)
         tasks = task.get_task_names(ctx.obj)
-        return list(tasks) + ["__env", "__plugins"]
+        return list(tasks) + ["__env", "__init", "__plugins"]
 
     def get_command(self, ctx, name):
         # Invoke here to get the ctx populated
@@ -25,6 +26,8 @@ class VantageCLI(click.MultiCommand):
         # First try vantage builtins
         if name == "__env":
             return env_cmd
+        if name == "__init":
+            return init_cmd
         if name == "__plugins":
             return plugins_cmd
         # Then a project task file or an installed plugin task file
@@ -93,7 +96,7 @@ def find_app(path=None):
 def get_env_vars(app, env, var):
     env_vars = load_env_from_file(app / ".vantage", ignore_missing=True)
     env_vars["VG_APP_DIR"] = str(app)
-    env_dir = find_env_dir(app)
+    env_dir = find_env_dir(app, env_vars)
     if env_dir:
         env_vars["VG_ENV_DIR"] = str(env_dir)
     if "VG_ENV_FILE" in os.environ:
@@ -127,7 +130,9 @@ def get_env_vars_from_var_options(var):
         yield key, val
 
 
-def find_env_dir(app):
+def find_env_dir(app, env):
+    if "VG_ENV_DIR" in env:
+        return env["VG_ENV_DIR"]
     p = app / ".env"
     if p.is_dir():
         return p
