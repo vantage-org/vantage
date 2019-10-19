@@ -76,7 +76,6 @@ def vantage(ctx, app=None, env=None, var=None, verbose=False):
             for key, val in env_vars.items():
                 utils.loquacious(f"  {key}={val}")
         ctx.obj = env_vars
-    click.echo(ctx.obj["VG_BINARY"])
 
 
 def find_app(path=None):
@@ -107,7 +106,14 @@ def get_env_vars(app, env, var):
         parent_env.update(env_vars)
         env_vars = parent_env
     elif "VG_DEFAULT_ENV" in env_vars:
-        env_vars.update(load_env_from_file(env_vars["VG_DEFAULT_ENV"]))
+        default_env = Path(env_vars["VG_DEFAULT_ENV"])
+        if not default_env.is_file() and env_dir:
+            default_env = env_dir / env_vars["VG_DEFAULT_ENV"]
+        if not default_env.is_file():
+            raise click.ClickException(
+                f"The default env file '{env_vars['VG_DEFAULT_ENV']}' does not exist"
+            )
+        env_vars.update(load_env_from_file(default_env))
     for env_file in env:
         path = Path(env_file)
         if not path.is_file() and env_dir:
@@ -141,7 +147,7 @@ def get_env_vars_from_var_options(var):
 
 def find_env_dir(app, env):
     if "VG_ENV_DIR" in env:
-        return env["VG_ENV_DIR"]
+        return Path(env["VG_ENV_DIR"])
     p = app / ".env"
     if p.is_dir():
         return p
