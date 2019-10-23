@@ -130,16 +130,33 @@ def get_flag(opt, env, yml, default):
     return opt
 
 
+def is_executable(path):
+    return path.is_file() and os.access(path, os.X_OK)
+
+
 def get_task(env, name):
     task_dir = get_task_dir(env)
     plugins_dir = get_plugins_dir(env)
 
     for dir_ in (task_dir, plugins_dir):
         if dir_.is_dir():
-            for stem in (name, f"{name}/{name}"):
-                for task_path in dir_.glob(f"{stem}*"):
-                    if os.access(task_path, os.X_OK):
-                        return as_command(task_path)
+            return get_task_from_dir(dir_, name)
+
+
+def get_task_from_dir(dir_, name):
+    task_path = dir_ / name
+    if is_executable(task_path):
+        return as_command(task_path)
+
+    if task_path.is_dir():
+        nested = get_task_from_dir(task_path, name)
+        if nested:
+            return nested
+        return as_group(task_path)
+
+    for task_path in dir_.glob(f"{name}.*"):
+        if is_executable(task_path):
+            return as_command(task_path)
 
 
 @lru_cache()
@@ -159,6 +176,18 @@ def as_command(path):
     )
 
 
+@lru_cache()
+def as_group(path, walk=True):
+    group = click.Group(name=path.stem)
+    if walk:
+        for task_path in path.iterdir():
+            if task_path.is_dir():
+                group.add_command(as_group(task_path, walk=False))
+            elif is_executable(task_path):
+                group.add_command(as_command(task_path))
+    return group
+
+
 def get_task_names(env):
     task_dir = get_task_dir(env)
     plugins_dir = get_plugins_dir(env)
@@ -166,7 +195,7 @@ def get_task_names(env):
     for dir_ in (task_dir, plugins_dir):
         if dir_.is_dir():
             for task_path in dir_.iterdir():
-                if os.access(task_path, os.X_OK):
+                if task_path.is_dir() or is_executable(task_path):
                     yield task_path.stem
 
 
