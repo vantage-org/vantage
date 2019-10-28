@@ -139,24 +139,26 @@ def get_task(env, name):
     plugins_dir = get_plugins_dir(env)
 
     for dir_ in (task_dir, plugins_dir):
+        utils.loquacious(f"Looking in {dir_} for task file")
         if dir_.is_dir():
             return get_task_from_dir(dir_, name)
 
 
 def get_task_from_dir(dir_, name):
+    utils.loquacious(f"Trying to find {name} in {dir_}")
     task_path = dir_ / name
     if is_executable(task_path):
         return as_command(task_path)
+
+    for task_path in dir_.glob(f"{name}.*"):
+        if is_executable(task_path):
+            return as_command(task_path)
 
     if task_path.is_dir():
         nested = get_task_from_dir(task_path, name)
         if nested:
             return nested
         return as_group(task_path)
-
-    for task_path in dir_.glob(f"{name}.*"):
-        if is_executable(task_path):
-            return as_command(task_path)
 
 
 @lru_cache()

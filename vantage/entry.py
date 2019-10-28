@@ -18,12 +18,14 @@ class VantageCLI(click.MultiCommand):
     def list_commands(self, ctx):
         # Invoke here to get the ctx populated
         click.Command.invoke(self, ctx)
+        utils.loquacious("Listing commands...")
         tasks = task.get_task_names(ctx.obj)
         return list(tasks) + ["__env", "__init", "__plugins"]
 
     def get_command(self, ctx, name):
         # Invoke here to get the ctx populated
         click.Command.invoke(self, ctx)
+        utils.loquacious("Getting single command")
         # First try vantage builtins
         if name == "__env":
             return env_cmd
@@ -44,7 +46,7 @@ class VantageCLI(click.MultiCommand):
     cls=VantageCLI, context_settings=CONTEXT_SETTINGS, invoke_without_command=True
 )
 @click.option(
-    "-a",
+    '-a',
     "--app",
     help="Set the app directory, the base dir from which every command is run",
 )
