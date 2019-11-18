@@ -1,0 +1,7 @@
+#!/bin/sh
+# ---
+# help-text: Install this dev version to /usr/local/bin/v3
+# requires:
+#   - build
+# ---
+cp dist/vantage /usr/local/bin/v3
