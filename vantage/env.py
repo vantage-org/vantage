@@ -7,10 +7,16 @@ from vantage import utils
 
 @click.command(name="__env")
 @click.option(
-    "-b", "--base64", is_flag=True, help="When setting a var convert it to base64 first"
+    "-b",
+    "--base64",
+    is_flag=True,
+    help="When setting a var convert it to base64 first",
 )
 @click.option(
-    "-s", "--stdin", is_flag=True, help="When setting a var read the value from stdin"
+    "-s",
+    "--stdin",
+    is_flag=True,
+    help="When setting a var read the value from stdin",
 )
 @click.argument("key_val", required=False)
 @click.pass_obj
@@ -42,10 +48,13 @@ def write_env_value(env, key, value, base64=False):
     try:
         env_file = Path(env["VG_ENV_FILE"])
         utils.loquacious(f"  Adding {key}={value} to {env_file}")
-        with env_file.open("a") as fp:
-            if base64:
-                value = utils.to_base64(value)
-            fp.write(f"{key}={value}\n")
+        if base64:
+            value = utils.to_base64(value)
+        env[key] = value
+        with env_file.open("w") as fp:
+            for key, value in sorted(env.items()):
+                if not key.startswith("VG_"):
+                    fp.write(f"{key}={value}\n")
     except KeyError:
         raise click.ClickException(
             f"No env file provided, there's nowhere to store this value"
