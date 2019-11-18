@@ -14,7 +14,6 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 class VantageCLI(click.MultiCommand):
-
     def list_commands(self, ctx):
         # Invoke here to get the ctx populated
         click.Command.invoke(self, ctx)
@@ -43,16 +42,28 @@ class VantageCLI(click.MultiCommand):
 
 
 @click.command(
-    cls=VantageCLI, context_settings=CONTEXT_SETTINGS, invoke_without_command=True
+    cls=VantageCLI,
+    context_settings=CONTEXT_SETTINGS,
+    invoke_without_command=True,
 )
 @click.option(
-    '-a',
+    "-a",
     "--app",
     help="Set the app directory, the base dir from which every command is run",
 )
-@click.option("-e", "--env", multiple=True, help="Add an env file to the environment")
 @click.option(
-    "-v", "--var", multiple=True, help="Add a single variable to the environment"
+    "-e", "--env", multiple=True, help="Add an env file to the environment"
+)
+@click.option(
+    "-v",
+    "--var",
+    multiple=True,
+    help="Add a single variable to the environment",
+)
+@click.option(
+    "-r/-s",
+    "--run-required/--skip-required",
+    help="Run/skip required tasks before running this task",
 )
 @click.option(
     "--verbose",
@@ -61,7 +72,9 @@ class VantageCLI(click.MultiCommand):
     help="Print verbose debug messages to stdout",
 )
 @click.pass_context
-def vantage(ctx, app=None, env=None, var=None, verbose=False):
+def vantage(
+    ctx, app=None, env=None, var=None, verbose=False, run_required=None
+):
     """Run COMMAND inside a dynamic environment
 
     \b
@@ -73,10 +86,11 @@ def vantage(ctx, app=None, env=None, var=None, verbose=False):
         app = find_app(app)
         env_vars = get_env_vars(app, env, var)
         env_vars.setdefault("VG_VERBOSE", "1" if verbose else "")
+        env_vars.setdefault("VG_RUN_REQUIRED", "1" if run_required else "")
         if env_vars["VG_VERBOSE"]:
-            utils.loquacious("Compiled ENV is:")
+            utils.loquacious("Compiled ENV is:", env=env_vars)
             for key, val in env_vars.items():
-                utils.loquacious(f"  {key}={val}")
+                utils.loquacious(f"  {key}={val}", env=env_vars)
         ctx.obj = env_vars
 
 
@@ -99,12 +113,13 @@ def find_app(path=None):
 def get_env_vars(app, env, var):
     env_vars = load_env_from_file(app / ".vantage", ignore_missing=True)
     env_vars["VG_APP_DIR"] = str(app)
+    default_env = None
     env_dir = find_env_dir(app, env_vars)
     if env_dir:
         env_vars["VG_ENV_DIR"] = str(env_dir)
     if "VG_ENV_FILE" in os.environ:
         env_vars["VG_ENV_FILE"] = os.environ["VG_ENV_FILE"]
-        parent_env = load_env_from_file(env_vars["VG_PARENT_ENV_FILE"])
+        parent_env = load_env_from_file(Path(env_vars["VG_ENV_FILE"]))
         parent_env.update(env_vars)
         env_vars = parent_env
     elif "VG_DEFAULT_ENV" in env_vars:
@@ -127,6 +142,8 @@ def get_env_vars(app, env, var):
     for key, val in get_env_vars_from_var_options(var):
         env_vars[key] = val
     env_vars["VG_BINARY"] = get_binary()
+    if "VG_ENV_FILE" not in env_vars and default_env:
+        env_vars["VG_ENV_FILE"] = str(default_env)
     return env_vars
 
 
