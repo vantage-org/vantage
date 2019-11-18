@@ -1,2 +1,2 @@
 #!/bin/bash
-vantage do-something --run-required
+vantage --run-required do-something
