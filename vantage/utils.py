@@ -18,9 +18,9 @@ def from_base64(value):
     return value
 
 
-def loquacious(line):
+def loquacious(line, env=None):
     try:
-        env = click.get_current_context().obj
+        env = env or click.get_current_context().obj
         if env is not None and env.get("VG_VERBOSE"):
             click.echo(f"VG-LOG: {line}")
     except RuntimeError:
