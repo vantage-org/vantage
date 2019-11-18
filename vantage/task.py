@@ -11,14 +11,13 @@ from vantage import utils
 
 
 @click.pass_context
-def task_cmd(ctx, path, args, run_required=None):
+def task_cmd(ctx, path, args):
     env = ctx.obj
     utils.loquacious(f"Running task in {path}")
     meta = load_meta(path)
     env = update_env(meta, env)
     run_required = get_flag(
-        opt=run_required,
-        env=env.get("VG_RUN_REQUIRED"),
+        env=bool(env.get("VG_RUN_REQUIRED")),
         yml=meta.get("run-required"),
         default=False,
     )
@@ -33,6 +32,7 @@ def task_cmd(ctx, path, args, run_required=None):
         tty_in = False
         if meta.get("image"):
             utils.loquacious(f"  Spinning up docker image")
+            utils.loquacious(f"  Path is: {os.environ.get('PATH')}")
             cmd = sh.Command("docker")
             image = meta.get("image")
             run_args = [
@@ -46,16 +46,19 @@ def task_cmd(ctx, path, args, run_required=None):
             ]
             if isinstance(image, dict):
                 tty_in = bool(image.get("tty", False))
-                tag = image.pop("tag")
+                tag = insert_env_vals(image.pop("tag"), env, args)
                 for k, v in image.items():
                     if isinstance(v, list):
                         for w in v:
-                            run_args += [f"--{k}", insert_env_vals(w, env)]
+                            run_args += [
+                                f"--{k}",
+                                insert_env_vals(w, env, args),
+                            ]
                     elif isinstance(v, bool):
                         if v:
                             run_args += [f"--{k}"]
                     else:
-                        run_args += [f"--{k}", insert_env_vals(v, env)]
+                        run_args += [f"--{k}", insert_env_vals(v, env, args)]
             else:
                 tag = image
                 run_args += ["--rm"]
@@ -65,24 +68,32 @@ def task_cmd(ctx, path, args, run_required=None):
             args = run_args + list(args)
         else:
             utils.loquacious(f"  Passing task over to sh")
+            env["PATH"] = os.environ.get("PATH", "")
             cmd = sh.Command(str(path))
+        utils.loquacious(f"Running command {cmd} with args {args}")
         cmd(
             *args,
-            _out=click.get_text_stream("stdout"),
-            _err=click.get_text_stream("stderr"),
-            _in=click.get_text_stream("stdin"),
+            _fg=True,
             _tty_in=tty_in,
+            _out_bufsize=0,
             _env=env,
             _cwd=env["VG_APP_DIR"],
         )
     except sh.ErrorReturnCode as erc:
-        utils.loquacious(f"  Something went wrong, returned exit code {erc.exit_code}")
+
+        utils.loquacious(
+            f"  Something went wrong, returned exit code {erc.exit_code}"
+        )
         return sys.exit(erc.exit_code)
 
 
-def insert_env_vals(str, env):
+def insert_env_vals(str, env, args):
     for k, v in env.items():
         needle = f"${k}"
+        if needle in str:
+            str = str.replace(needle, v)
+    for i, v in enumerate(args):
+        needle = f"${i}"
         if needle in str:
             str = str.replace(needle, v)
     return str
@@ -128,14 +139,12 @@ def update_env(meta, env):
     return env
 
 
-def get_flag(opt, env, yml, default):
-    if opt is None:
-        if env is None:
-            if yml is None:
-                return default
-            return yml
-        return env
-    return opt
+def get_flag(env, yml, default):
+    if env is None:
+        if yml is None:
+            return default
+        return yml
+    return env
 
 
 def is_executable(path):
@@ -149,37 +158,45 @@ def get_task(env, name):
     for dir_ in (task_dir, plugins_dir):
         utils.loquacious(f"Looking in {dir_} for task file")
         if dir_.is_dir():
-            return get_task_from_dir(dir_, name)
+            task = get_task_from_dir(dir_, name)
+            if task is not None:
+                return task
 
 
 def get_task_from_dir(dir_, name):
     utils.loquacious(f"Trying to find {name} in {dir_}")
     task_path = dir_ / name
     if is_executable(task_path):
+        utils.loquacious(f"It's an executable script")
         return as_command(task_path)
 
     for task_path in dir_.glob(f"{name}.*"):
         if is_executable(task_path):
+            utils.loquacious(f"It's an executable script with a file ext")
             return as_command(task_path)
 
     if task_path.is_dir():
         nested = get_task_from_dir(task_path, name)
         if nested:
+            utils.loquacious(
+                f"It's an executable script inside a folder of the same name"
+            )
             return nested
+        utils.loquacious(f"It's a folder of other tasks")
         return as_group(task_path)
 
 
 @lru_cache()
 def as_command(path):
+    utils.loquacious(f"Building {path} as a command")
     meta = load_meta(path)
-    params = [
-        click.Option(("--run-required/--skip-required",)),
-        click.Argument(("args",), nargs=-1, type=click.UNPROCESSED),
-    ]
+    params = [click.Argument(("args",), nargs=-1, type=click.UNPROCESSED)]
     return click.Command(
         path.stem,
         callback=partial(task_cmd, path=path),
-        context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
+        context_settings=dict(
+            allow_extra_args=True, ignore_unknown_options=True
+        ),
         params=params,
         short_help=meta.get("help-text"),
         help=meta.get("help-text"),
@@ -188,8 +205,10 @@ def as_command(path):
 
 @lru_cache()
 def as_group(path, walk=True):
+    utils.loquacious(f"Building {path} as a group")
     group = click.Group(name=path.stem)
     if walk:
+        utils.loquacious(f"Walking the file tree looking for sub commands")
         for task_path in path.iterdir():
             if task_path.is_dir():
                 group.add_command(as_group(task_path, walk=False))
@@ -204,6 +223,7 @@ def get_task_names(env):
 
     for dir_ in (task_dir, plugins_dir):
         if dir_.is_dir():
+            utils.loquacious(f"Listing tasks inside {dir_}")
             for task_path in dir_.iterdir():
                 if task_path.is_dir() or is_executable(task_path):
                     yield task_path.stem
