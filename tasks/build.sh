@@ -2,7 +2,7 @@
 # ---
 # help-text: Build the vantage binary
 # requires:
-#   - init
+#   - test
 # ---
 . venv/bin/activate
 pyinstaller --noconfirm --clean --onefile --name vantage vantage/__main__.py
