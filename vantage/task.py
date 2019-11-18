@@ -110,13 +110,21 @@ def load_meta(path):
 
 
 def update_env(meta, env):
-    env_vars = meta.get("variables")
-    if env_vars is not None:
+    overrides = meta.get("overrides")
+    if overrides is not None:
         if env["VG_VERBOSE"]:
-            utils.loquacious("  Updating env with vars in task meta")
-            for key, val in env_vars.items():
+            utils.loquacious("  Updating env with override vars in task meta")
+            for key, val in overrides.items():
                 utils.loquacious(f"    {key}={val}")
-        env.update(env_vars)
+        env.update(overrides)
+    defaults = meta.get("defaults")
+    if defaults is not None:
+        if env["VG_VERBOSE"]:
+            utils.loquacious("  Updating env with default vars in task meta")
+            for key, val in defaults.items():
+                utils.loquacious(f"    {key}={val}")
+        defaults.update(env)
+        env = defaults
     return env
 
 

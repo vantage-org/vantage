@@ -1,6 +1,10 @@
 #!/bin/bash
 # ---
-# variables:
-#   SOMETHING: 'something!'
+# overrides:
+#   ONE: 'one'
+#   TWO: 'two'
+# defaults:
+#   TWO: 'bad default'
+#   THREE: 'three'
 # ---
-echo "$SOMETHING"
+echo "$ONE", "$TWO", "$THREE"
