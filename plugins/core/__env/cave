@@ -1,4 +1,0 @@
-#!/usr/bin/env /bin/sh
-
-export $(cat "$1" | xargs)
-env | grep -v PWD

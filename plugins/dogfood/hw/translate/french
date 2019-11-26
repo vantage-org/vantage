@@ -1,9 +1,0 @@
-#!/bin/bash
-
-NAME=$(vantage __env VG_HW_NAME)
-
-if [ -z "$NAME" ]; then
-    NAME="World"
-fi
-
-echo "Bonjour $NAME!"
