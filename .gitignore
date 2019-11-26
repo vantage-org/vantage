@@ -8,3 +8,6 @@ __pycache__
 /vantage.spec
 /tests/tmp
 /test.log
+.env
+.vantage
+.vg-plugins
