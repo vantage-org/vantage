@@ -59,6 +59,8 @@ def task_cmd(ctx, path, args):
                             run_args += [f"--{k}"]
                     else:
                         run_args += [f"--{k}", insert_env_vals(v, env, args)]
+                if "VG_DOCKER_NETWORK" in env and "network" not in image:
+                    run_args += ["--network", env["VG_DOCKER_NETWORK"]]
             else:
                 tag = image
                 run_args += ["--rm"]
