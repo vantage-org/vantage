@@ -87,16 +87,16 @@ def task_cmd(ctx, path, args):
         return sys.exit(erc.exit_code)
 
 
-def insert_env_vals(str, env, args):
+def insert_env_vals(haystack, env, args):
     for k, v in env.items():
         needle = f"${k}"
-        if needle in str:
-            str = str.replace(needle, v)
+        if needle in haystack:
+            haystack = haystack.replace(needle, str(v))
     for i, v in enumerate(args):
         needle = f"${i}"
-        if needle in str:
-            str = str.replace(needle, v)
-    return str
+        if needle in haystack:
+            haystack = haystack.replace(needle, str(v))
+    return haystack
 
 
 @lru_cache()
@@ -121,6 +121,10 @@ def load_meta(path):
 
 
 def update_env(meta, env):
+    if meta.get("env"):
+        env_file = meta["env"]
+        utils.loquacious("  Using env {env_file} instead")
+        return load_env(env_file, current=env)
     overrides = meta.get("overrides")
     if overrides is not None:
         if env["VG_VERBOSE"]:
@@ -137,6 +141,27 @@ def update_env(meta, env):
         defaults.update(env)
         env = defaults
     return env
+
+
+def load_env(name_or_path, current):
+    new_env = None
+    path = Path(name_or_path)
+    if path.is_file():
+        new_env = utils.load_env_from_file(path)
+    else:
+        env_dir = current.get("VG_ENV_DIR")
+        if env_dir:
+            path = Path(env_dir) / name_or_path
+            if path.is_file():
+                new_env = utils.load_env_from_file(path)
+    if new_env is None:
+        raise click.ClickException(
+            f"The env file '{name_or_path}' does not exist"
+        )
+    for k, v in current.items():
+        if k.startswith("VG_") and k not in new_env:
+            new_env[k] = v
+    return new_env
 
 
 def get_flag(env, yml, default):
