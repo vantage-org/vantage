@@ -1,5 +1,6 @@
 import binascii
 import base64
+from pathlib import Path
 
 import click
 
@@ -28,3 +29,19 @@ def loquacious(line, env=None):
         # env. In this case we default to not printing the verbose logs.
         # This situation happens when you're trying to autocomplete
         pass
+
+
+def load_env_from_file(path, ignore_missing=False):
+    env = {}
+    try:
+        with path.open() as fp:
+            for line in fp:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    value = from_base64(value.strip())
+                    env[key.strip()] = value
+    except FileNotFoundError:
+        if not ignore_missing:
+            raise click.ClickException(f"The env file '{path}' does not exist")
+    return env

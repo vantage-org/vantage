@@ -111,7 +111,7 @@ def find_app(path=None):
 
 
 def get_env_vars(app, env, var):
-    env_vars = load_env_from_file(app / ".vantage", ignore_missing=True)
+    env_vars = utils.load_env_from_file(app / ".vantage", ignore_missing=True)
     env_vars["VG_APP_DIR"] = str(app)
     default_env = None
     env_dir = find_env_dir(app, env_vars)
@@ -119,7 +119,7 @@ def get_env_vars(app, env, var):
         env_vars["VG_ENV_DIR"] = str(env_dir)
     if "VG_ENV_FILE" in os.environ:
         env_vars["VG_ENV_FILE"] = os.environ["VG_ENV_FILE"]
-        parent_env = load_env_from_file(Path(env_vars["VG_ENV_FILE"]))
+        parent_env = utils.load_env_from_file(Path(env_vars["VG_ENV_FILE"]))
         parent_env.update(env_vars)
         env_vars = parent_env
     elif "VG_DEFAULT_ENV" in env_vars:
@@ -130,15 +130,14 @@ def get_env_vars(app, env, var):
             raise click.ClickException(
                 f"The default env file '{env_vars['VG_DEFAULT_ENV']}' does not exist"
             )
-        env_vars.update(load_env_from_file(default_env))
+        env_vars.update(utils.load_env_from_file(default_env))
     for env_file in env:
         path = Path(env_file)
         if not path.is_file() and env_dir:
             path = env_dir / path
         if path.is_file():
-            env_vars.update(load_env_from_file(path))
-        if "VG_ENV_FILE" not in env_vars:
-            env_vars["VG_ENV_FILE"] = str(path.resolve())
+            env_vars.update(utils.load_env_from_file(path))
+        env_vars["VG_ENV_FILE"] = str(path.resolve())
     for key, val in get_env_vars_from_var_options(var):
         env_vars[key] = val
     env_vars["VG_BINARY"] = get_binary()
@@ -170,19 +169,3 @@ def find_env_dir(app, env):
     p = app / ".env"
     if p.is_dir():
         return p
-
-
-def load_env_from_file(path, ignore_missing=False):
-    env = {}
-    try:
-        with path.open() as fp:
-            for line in fp:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    key, value = line.split("=", 1)
-                    value = utils.from_base64(value.strip())
-                    env[key.strip()] = value
-    except FileNotFoundError:
-        if not ignore_missing:
-            raise click.ClickException(f"The env file '{path}' does not exist")
-    return env
