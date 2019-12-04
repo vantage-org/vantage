@@ -5,4 +5,4 @@
 #   - test
 # ---
 . venv/bin/activate
-pyinstaller --noconfirm --clean --onefile --name vantage vantage/__main__.py
+pyinstaller --noconfirm --clean --onedir --name vantage vantage/__main__.py
