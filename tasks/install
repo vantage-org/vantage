@@ -4,6 +4,5 @@
 # requires:
 #   - build
 # ---
-sudo rm -rf /usr/local/bin/v3 /usr/local/v3
-sudo cp -r dist/vantage /usr/local/v3
-sudo ln -s /usr/local/v3/vantage /usr/local/bin/v3
+sudo rm /usr/local/bin/v3
+sudo ln -s "$VG_APP_DIR/dist/vantage/vantage" /usr/local/bin/v3
