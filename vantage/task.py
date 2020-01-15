@@ -89,15 +89,17 @@ def task_cmd(ctx, path, args):
         return sys.exit(erc.exit_code)
 
 
-def insert_env_vals(haystack, env, args):
-    for k, v in env.items():
-        needle = f"${k}"
-        if needle in haystack:
-            haystack = haystack.replace(needle, str(v))
-    for i, v in enumerate(args):
-        needle = f"${i}"
-        if needle in haystack:
-            haystack = haystack.replace(needle, str(v))
+def insert_env_vals(haystack, env=None, args=None):
+    if env:
+        for k, v in env.items():
+            needle = f"${k}"
+            if needle in haystack:
+                haystack = haystack.replace(needle, str(v))
+    if args:
+        for i, v in enumerate(args):
+            needle = f"${i}"
+            if needle in haystack:
+                haystack = haystack.replace(needle, str(v))
     return haystack
 
 
@@ -129,19 +131,19 @@ def update_env(meta, env):
         return load_env(env_file, current=env)
     overrides = meta.get("overrides")
     if overrides is not None:
-        if env["VG_VERBOSE"]:
-            utils.loquacious("  Updating env with override vars in task meta")
-            for key, val in overrides.items():
-                utils.loquacious(f"    {key}={val}")
-        env.update(overrides)
+        utils.loquacious("  Updating env with override vars in task meta")
+        for key, val in overrides.items():
+            val = insert_env_vals(val, env)
+            env[key] = val
+            utils.loquacious(f"    {key}={val}")
     defaults = meta.get("defaults")
     if defaults is not None:
-        if env["VG_VERBOSE"]:
-            utils.loquacious("  Updating env with default vars in task meta")
-            for key, val in defaults.items():
+        utils.loquacious("  Updating env with default vars in task meta")
+        for key, val in defaults.items():
+            if key not in env:
+                val = insert_env_vals(val, env)
+                env[key] = val
                 utils.loquacious(f"    {key}={val}")
-        defaults.update(env)
-        env = defaults
     return env
 
 

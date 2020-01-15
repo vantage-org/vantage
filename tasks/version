@@ -2,4 +2,4 @@
 # ---
 # help-text: echo the current vantage version
 # ---
-echo 3.0.0
+echo 3.0.1
