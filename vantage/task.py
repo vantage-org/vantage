@@ -60,7 +60,9 @@ def task_cmd(ctx, path, args):
                     else:
                         run_args += [f"--{k}", insert_env_vals(v, env, args)]
                 if "VG_DOCKER_NETWORK" in env and "network" not in image:
-                    run_args += ["--network", env["VG_DOCKER_NETWORK"]]
+                    network = env["VG_DOCKER_NETWORK"]
+                    ensure_network(network)
+                    run_args += ["--network", network]
             else:
                 tag = image
                 run_args += ["--rm"]
@@ -82,7 +84,6 @@ def task_cmd(ctx, path, args):
             _cwd=env["VG_APP_DIR"],
         )
     except sh.ErrorReturnCode as erc:
-
         utils.loquacious(
             f"  Something went wrong, returned exit code {erc.exit_code}"
         )
@@ -178,6 +179,10 @@ def get_flag(env, yml, default):
 
 def is_executable(path):
     return path.is_file() and os.access(path, os.X_OK)
+
+
+def ensure_network(name):
+    sh.docker("network", "create", name, _ok_code=[0, 1])
 
 
 def get_task(env, name):
