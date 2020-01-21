@@ -12,4 +12,4 @@ VERSION=$(vantage __version)
 
 cp -r dist "vantage-$VERSION"
 cp install.sh README.md LICENSE "vantage-$VERSION/"
-tar -cvzf "vantage-$VERSION.tar.gz" "vantage-$VERSION"
+tar -cvzf "vantage-$VERSION.tar.gz" -C "vantage-$VERSION" .
