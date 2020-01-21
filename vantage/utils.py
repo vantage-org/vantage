@@ -1,7 +1,12 @@
-import binascii
 import base64
+import binascii
+import io
+import json
+import tarfile
+import urllib.request
 
 import click
+import certifi
 
 
 def to_base64(value):
@@ -44,3 +49,24 @@ def load_env_from_file(path, ignore_missing=False):
         if not ignore_missing:
             raise click.ClickException(f"The env file '{path}' does not exist")
     return env
+
+
+def determine_github_latest_release(name):
+    certs = certifi.where()
+    latest_release = urllib.request.urlopen(
+        f"https://api.github.com/repos/vantage-org/{name}/releases/latest",
+        cafile=certs,
+    )
+    latest_release = json.load(latest_release)
+    for asset in latest_release["assets"]:
+        if name in asset["name"]:
+            return asset["browser_download_url"]
+
+
+def download_tarball(url, path):
+    certs = certifi.where()
+    archive = urllib.request.urlopen(url, cafile=certs)
+    archive = urllib.request.urlopen(url, cafile=certs)
+    archive = io.BytesIO(archive.read())
+    tar = tarfile.open(fileobj=archive, mode="r:*")
+    tar.extractall(path=path)

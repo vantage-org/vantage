@@ -1,12 +1,9 @@
-import io
-import json
 import shutil
-import tarfile
-import urllib.request
 from pathlib import Path
 
 import click
-import certifi
+
+from vantage import utils
 
 
 @click.group(name="__plugins")
@@ -26,24 +23,12 @@ def install(env, name):
     e.g. vantage __plugins install pg
     """
     url = name
-    certs = certifi.where()
     if url.startswith("https://"):
         _, name = url.rsplit("/", 1)
         name, _ = name.split(".", 1)
     else:
-        latest_release = urllib.request.urlopen(
-            f"https://api.github.com/repos/vantage-org/{name}/releases/latest",
-            cafile=certs,
-        )
-        latest_release = json.load(latest_release)
-        for asset in latest_release["assets"]:
-            if name in asset["name"]:
-                url = asset["browser_download_url"]
-                break
-    archive = urllib.request.urlopen(url, cafile=certs)
-    archive = io.BytesIO(archive.read())
-    tar = tarfile.open(fileobj=archive, mode="r:*")
-    tar.extractall(path=Path(env["VG_APP_DIR"]) / ".vg-plugins" / name)
+        url = utils.determine_github_latest_release(name)
+    utils.download_tarball(url, Path(env["VG_APP_DIR"]) / ".vg-plugins" / name)
 
 
 @plugins.command(name="uninstall")
