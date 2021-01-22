@@ -57,5 +57,5 @@ def write_env_value(env, key, value, base64=False):
                     fp.write(f"{key}={value}\n")
     except KeyError:
         raise click.ClickException(
-            f"No env file provided, there's nowhere to store this value"
+            "No env file provided, there's nowhere to store this value"
         )

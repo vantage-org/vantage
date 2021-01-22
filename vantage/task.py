@@ -31,7 +31,7 @@ def task_cmd(ctx, path, args):
     try:
         tty_in = False
         if meta.get("image"):
-            utils.loquacious(f"  Spinning up docker image")
+            utils.loquacious("  Spinning up docker image")
             utils.loquacious(f"  Path is: {os.environ.get('PATH')}")
             cmd = sh.Command("docker")
             image = meta.get("image")
@@ -71,15 +71,15 @@ def task_cmd(ctx, path, args):
             run_args += [tag, "/vg-task"]
             args = run_args + list(args)
         else:
-            utils.loquacious(f"  Passing task over to sh")
+            utils.loquacious("  Passing task over to sh")
             env["PATH"] = os.environ.get("PATH", "")
             cmd = sh.Command(str(path))
         utils.loquacious(f"Running command {cmd} with args {args}")
         cmd(
             *args,
-            _fg=True,
-            _tty_in=tty_in,
-            _out_bufsize=0,
+            _in=sys.stdin,
+            _out=sys.stdout,
+            _err=sys.stderr,
             _env=env,
             _cwd=env["VG_APP_DIR"],
         )
@@ -106,7 +106,7 @@ def insert_env_vals(haystack, env=None, args=None):
 
 @lru_cache()
 def load_meta(path):
-    utils.loquacious(f"  Loading meta from task file")
+    utils.loquacious("  Loading meta from task file")
     with path.open() as f:
         content = f.read()
         sep = None
@@ -115,7 +115,7 @@ def load_meta(path):
                 sep = line
                 break
         if sep is None:
-            utils.loquacious(f"  No meta found")
+            utils.loquacious("  No meta found")
             return {}
         else:
             _, meta, script = content.split(sep, 2)
@@ -201,22 +201,22 @@ def get_task_from_dir(dir_, name):
     utils.loquacious(f"Trying to find {name} in {dir_}")
     task_path = dir_ / name
     if is_executable(task_path):
-        utils.loquacious(f"It's an executable script")
+        utils.loquacious("It's an executable script")
         return as_command(task_path)
 
     for task_path in dir_.glob(f"{name}.*"):
         if is_executable(task_path):
-            utils.loquacious(f"It's an executable script with a file ext")
+            utils.loquacious("It's an executable script with a file ext")
             return as_command(task_path)
 
     if task_path.is_dir():
         nested = get_task_from_dir(task_path, name)
         if nested:
             utils.loquacious(
-                f"It's an executable script inside a folder of the same name"
+                "It's an executable script inside a folder of the same name"
             )
             return nested
-        utils.loquacious(f"It's a folder of other tasks")
+        utils.loquacious("It's a folder of other tasks")
         return as_group(task_path)
 
 
@@ -242,7 +242,7 @@ def as_group(path, walk=True):
     utils.loquacious(f"Building {path} as a group")
     group = click.Group(name=path.stem)
     if walk:
-        utils.loquacious(f"Walking the file tree looking for sub commands")
+        utils.loquacious("Walking the file tree looking for sub commands")
         for task_path in path.iterdir():
             if task_path.is_dir():
                 group.add_command(as_group(task_path, walk=False))
