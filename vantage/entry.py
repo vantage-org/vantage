@@ -54,9 +54,7 @@ class VantageCLI(click.MultiCommand):
     "--app",
     help="Set the app directory, the base dir from which every command is run",
 )
-@click.option(
-    "-e", "--env", multiple=True, help="Add an env file to the environment"
-)
+@click.option("-e", "--env", multiple=True, help="Add an env file to the environment")
 @click.option(
     "-v",
     "--var",
@@ -75,9 +73,7 @@ class VantageCLI(click.MultiCommand):
     help="Print verbose debug messages to stdout",
 )
 @click.pass_context
-def vantage(
-    ctx, app=None, env=None, var=None, verbose=False, run_required=None
-):
+def vantage(ctx, app=None, env=None, var=None, verbose=False, run_required=None):
     """Run COMMAND inside a dynamic environment
 
     \b
@@ -161,7 +157,7 @@ def get_env_vars_from_var_options(var):
             key, val = key_val.split("=", 1)
         else:
             key = key_val
-            val = click.prompt(f"Input required {key}=", prompt_suffix="")
+            val = os.environ.get(key, "")
         val = utils.from_base64(val.strip())
         yield key, val
 
