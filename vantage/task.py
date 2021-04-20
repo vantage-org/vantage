@@ -16,18 +16,6 @@ def task_cmd(ctx, path, args):
     utils.loquacious(f"Running task in {path}")
     meta = load_meta(path)
     env = update_env(meta, env)
-    run_required = get_flag(
-        env=bool(env.get("VG_RUN_REQUIRED")),
-        yml=meta.get("run-required"),
-        default=False,
-    )
-    utils.loquacious(f"  Run required? {'YES' if run_required else 'NO'}")
-    if run_required:
-        for required in meta.get("requires", []):
-            utils.loquacious(f"  Running required task: {required}")
-            t = get_task(env, required)
-            resp = t.invoke(ctx)
-            utils.loquacious(f"  Got resp: {resp}")
     try:
         if meta.get("image"):
             utils.loquacious("  Spinning up docker image")
@@ -82,9 +70,7 @@ def task_cmd(ctx, path, args):
             _cwd=env["VG_APP_DIR"],
         )
     except sh.ErrorReturnCode as erc:
-        utils.loquacious(
-            f"  Something went wrong, returned exit code {erc.exit_code}"
-        )
+        utils.loquacious(f"  Something went wrong, returned exit code {erc.exit_code}")
         return sys.exit(erc.exit_code)
 
 
@@ -158,9 +144,7 @@ def load_env(name_or_path, current):
             if path.is_file():
                 new_env = utils.load_env_from_file(path)
     if new_env is None:
-        raise click.ClickException(
-            f"The env file '{name_or_path}' does not exist"
-        )
+        raise click.ClickException(f"The env file '{name_or_path}' does not exist")
     for k, v in current.items():
         if k.startswith("VG_") and k not in new_env:
             new_env[k] = v
@@ -226,9 +210,7 @@ def as_command(path):
     return click.Command(
         path.stem,
         callback=partial(task_cmd, path=path),
-        context_settings=dict(
-            allow_extra_args=True, ignore_unknown_options=True
-        ),
+        context_settings=dict(allow_extra_args=True, ignore_unknown_options=True),
         params=params,
         short_help=meta.get("help-text"),
         help=meta.get("help-text"),

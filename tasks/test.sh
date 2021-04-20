@@ -1,8 +1,6 @@
 #!/bin/sh
 # ---
 # help-text: Run the test suite
-# requires:
-#   - init
 # ---
 set -e
 (

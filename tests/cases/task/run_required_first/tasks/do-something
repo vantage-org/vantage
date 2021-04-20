@@ -1,6 +1,0 @@
-#!/bin/bash
-# ---
-# requires:
-#   - do-this-first
-# ---
-echo 'something!'

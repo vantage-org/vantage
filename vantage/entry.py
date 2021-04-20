@@ -62,18 +62,13 @@ class VantageCLI(click.MultiCommand):
     help="Add a single variable to the environment",
 )
 @click.option(
-    "-r/-s",
-    "--run-required/--skip-required",
-    help="Run/skip required tasks before running this task",
-)
-@click.option(
     "--verbose",
     is_flag=True,
     default=False,
     help="Print verbose debug messages to stdout",
 )
 @click.pass_context
-def vantage(ctx, app=None, env=None, var=None, verbose=False, run_required=None):
+def vantage(ctx, app=None, env=None, var=None, verbose=False):
     """Run COMMAND inside a dynamic environment
 
     \b
@@ -85,7 +80,6 @@ def vantage(ctx, app=None, env=None, var=None, verbose=False, run_required=None)
         app = find_app(app)
         env_vars = get_env_vars(app, env, var)
         env_vars.setdefault("VG_VERBOSE", "1" if verbose else "")
-        env_vars.setdefault("VG_RUN_REQUIRED", "1" if run_required else "")
         if env_vars["VG_VERBOSE"]:
             utils.loquacious("Compiled ENV is:", env=env_vars)
             for key, val in env_vars.items():
