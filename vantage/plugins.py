@@ -42,5 +42,5 @@ def uninstall(env, name):
 @click.argument("name")
 @click.pass_obj
 def update(env, name):
-    click.invoke(uninstall, name)
-    click.invoke(install, name)
+    click.forward(uninstall)
+    click.forward(install)
