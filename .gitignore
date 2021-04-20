@@ -9,3 +9,4 @@ __pycache__
 /tests/tmp
 /test.log
 vantage-*
+.vscode/settings.json
