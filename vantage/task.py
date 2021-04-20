@@ -29,7 +29,6 @@ def task_cmd(ctx, path, args):
             resp = t.invoke(ctx)
             utils.loquacious(f"  Got resp: {resp}")
     try:
-        tty_in = False
         if meta.get("image"):
             utils.loquacious("  Spinning up docker image")
             utils.loquacious(f"  Path is: {os.environ.get('PATH')}")
@@ -45,7 +44,6 @@ def task_cmd(ctx, path, args):
                 "vantage-task",
             ]
             if isinstance(image, dict):
-                tty_in = bool(image.get("tty", False))
                 tag = insert_env_vals(image.pop("tag"), env, args)
                 for k, v in image.items():
                     if isinstance(v, list):
