@@ -17,7 +17,7 @@ def init(env):
             fp.write(f"VG_TASKS_DIR={app_dir / 'tasks'}\n")
             fp.write(f"VG_PLUGINS_DIR={app_dir / '.vg-plugins'}\n")
             fp.write(f"VG_ENV_DIR={app_dir / '.env'}\n")
-            fp.write(f"VG_DEFAULT_ENV=default\n")
+            fp.write("VG_DEFAULT_ENV=default\n")
     env_dir = app_dir / ".env"
     env_dir.mkdir(exist_ok=True)
     env_file = env_dir / "default"
