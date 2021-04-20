@@ -4,5 +4,5 @@
 # requires:
 #   - build
 # ---
-sudo rm /usr/local/bin/vg-next
-sudo ln -s "$VG_APP_DIR/dist/vantage/vantage" /usr/local/bin/vg-next
+rm -f /usr/local/bin/vg-next
+ln -s "$VG_APP_DIR/dist/vantage/vantage" /usr/local/bin/vg-next
