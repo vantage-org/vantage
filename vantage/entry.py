@@ -9,7 +9,6 @@ from vantage.env import env as env_cmd
 from vantage.init import init as init_cmd
 from vantage.plugins import plugins as plugins_cmd
 from vantage.shell import shell as shell_cmd
-from vantage.update import update as update_cmd
 from vantage.version import version as version_cmd
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -34,8 +33,6 @@ class VantageCLI(click.MultiCommand):
             return init_cmd
         if name == "__plugins":
             return plugins_cmd
-        if name == "__update":
-            return update_cmd
         if name == "__version":
             return version_cmd
         # Then a project task file or an installed plugin task file
