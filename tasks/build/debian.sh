@@ -17,9 +17,9 @@ echo "Building $VERSION for debian"
 apt-get update
 apt-get install --assume-yes python3 python3-venv python3-pip
 
-rm -rf venv dist build
-python3 -m venv venv
-. venv/bin/activate
+rm -rf venv-debian dist build
+python3 -m venv venv-debian
+. venv-debian/bin/activate
 pip install -U pip
 pip install -r requirements.txt
 pip install -e .

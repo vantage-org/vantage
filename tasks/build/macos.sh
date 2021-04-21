@@ -6,9 +6,8 @@ set -eu
 
 echo "Building $VERSION for MacOS"
 
-rm -rf venv dist build
-python3 -m venv venv
-. venv/bin/activate
+python3 -m venv venv-macos
+. venv-macos/bin/activate
 pip install -U pip
 pip install -r requirements.txt
 pip install -e .
