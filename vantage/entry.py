@@ -168,23 +168,11 @@ def get_env_vars(app, env, var):
         if path.is_file():
             env_vars.update(utils.load_env_from_file(path))
         env_vars["VG_ENV_FILE"] = str(path.resolve())
-    for key, val in get_env_vars_from_var_options(var):
+    for key, val in utils.get_env_from_key_val_list(var):
         env_vars[key] = val
     if "VG_ENV_FILE" not in env_vars and default_env:
         env_vars["VG_ENV_FILE"] = str(default_env)
     return env_vars
-
-
-def get_env_vars_from_var_options(var):
-    for key_val in var:
-        if "=" in key_val:
-            key, val = key_val.split("=", 1)
-            key = key.strip()
-        else:
-            key = key_val.strip()
-            val = os.environ.get(key, "")
-        val = utils.from_base64(val.strip())
-        yield key, val
 
 
 def find_env_dir(app, env):

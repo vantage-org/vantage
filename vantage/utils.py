@@ -82,3 +82,15 @@ def get_plugins_dir(env):
     if env.get("VG_PLUGINS_DIR"):
         return Path(env.get("VG_PLUGINS_DIR"))
     return Path(env["VG_APP_DIR"]) / ".vg-plugins"
+
+
+def get_env_from_key_val_list(key_vals):
+    for key_val in key_vals:
+        if "=" in key_val:
+            key, val = key_val.split("=", 1)
+            key = key.strip()
+        else:
+            key = key_val.strip()
+            val = os.environ.get(key, "")
+        val = from_base64(val.strip())
+        yield key, val

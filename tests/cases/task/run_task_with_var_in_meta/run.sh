@@ -1,2 +1,3 @@
 #!/bin/bash
-vantage do-something
+export THREE=three
+vantage --var TWO=two do-something

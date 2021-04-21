@@ -13,7 +13,7 @@ def execute_task_cmd(env, path, *args):
     utils.loquacious(f"Running task in {path}", env)
     utils.loquacious(f"  With args: {args}", env)
     meta = load_meta(env, path)
-    env = update_env(meta, env)
+    env = update_env(env, meta)
     try:
         if meta.get("image"):
             utils.loquacious("  Spinning up docker image", env)
@@ -108,22 +108,12 @@ def load_meta(env, path):
             return yaml.load(meta, Loader=yaml.SafeLoader)
 
 
-def update_env(meta, env):
-    if meta.get("env"):
-        env_file = meta["env"]
-        utils.loquacious("  Using env {env_file} instead", env)
-        return load_env(env_file, current=env)
-    overrides = meta.get("overrides")
-    if overrides is not None:
-        utils.loquacious("  Updating env with override vars in task meta", env)
-        for key, val in overrides.items():
-            val = insert_env_vals(val, env)
-            env[key] = val
-            utils.loquacious(f"    {key}={val}", env)
-    defaults = meta.get("defaults")
+def update_env(env, meta):
+    defaults = meta.get("environment")
     if defaults is not None:
-        utils.loquacious("  Updating env with default vars in task meta", env)
-        for key, val in defaults.items():
+        utils.loquacious("  Updating env with default environment in task meta", env)
+        defaults = utils.get_env_from_key_val_list(defaults)
+        for key, val in defaults:
             if key not in env:
                 val = insert_env_vals(val, env)
                 env[key] = val
