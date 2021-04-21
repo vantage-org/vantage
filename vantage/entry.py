@@ -214,6 +214,14 @@ def get_task_from_dir(env, dir_, name, *args):
             return task_path, args
 
     if task_path.is_dir():
+        utils.loquacious(f"It's a folder of other tasks: {task_path}", env)
+
+        if args:
+            sub_path, sub_args = get_task_from_dir(env, task_path, *args)
+            if sub_path:
+                utils.loquacious(f"Found sub task: {sub_path}", env)
+                return sub_path, sub_args
+
         nested, nested_args = get_task_from_dir(env, task_path, name, *args)
         if nested:
             utils.loquacious(
@@ -221,7 +229,5 @@ def get_task_from_dir(env, dir_, name, *args):
                 env,
             )
             return nested, nested_args
-        utils.loquacious(f"It's a folder of other tasks: {task_path}", env)
-        return get_task_from_dir(env, task_path, *args)
 
     return None, []
