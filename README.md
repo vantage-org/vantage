@@ -28,28 +28,26 @@ Also, I found it frustrating that different languages have completely different 
 Here's a quick tour of how to use vantage.
 
     $ vantage -h
-    Usage: vantage [OPTIONS] COMMAND [ARGS]...
+    usage: vantage [-a PATH] [-e NAME ...] [-v KEY=[VALUE] ...] [--verbose] [-h] COMMAND...
 
-      Run COMMAND inside a dynamic environment
+    Run COMMAND inside a dynamic environment
 
-      See the GitHub repo for more details:
-      https://github.com/vantage-org/vantage
+    optional arguments:
+    -a PATH, --app PATH   Set the app directory, the base dir from which every command is run
+    -e NAME, --env NAME   Add an env file to the environment
+    -v KEY[=VALUE], --var KEY[=VALUE]
+                            Add a single variable to the environment
+    --verbose             Print verbose debug messages to stdout
+    -h, --help            Show this help message and exit
 
-    Options:
-      -a, --app TEXT                  Set the app directory, the base dir from
-                                      which every command is run
-      -e, --env TEXT                  Add an env file to the environment
-      -v, --var TEXT                  Add a single variable to the environment
-      -r, --run-required / -s, --skip-required
-                                      Run/skip required tasks before running this
-                                      task
-      --verbose                       Print verbose debug messages to stdout
-      -h, --help                      Show this message and exit.
+    builtin commands:
+    __env      Manage environment variables and files
+    __init     Initialise a vantage project
+    __plugins  Manage vantage plugins
+    __tasks    Lists all available tasks
+    __version  Print current vantage version number
 
-    Commands:
-      __env      Read and set environment variables and files
-      __init     Initialise the VG_APP_DIR with default vantage config
-      __plugins  Manage vantage plugins
+    See the GitHub repo for more details: https://github.com/vantage-org/vantage
 
 From a fresh install with a blank project vantage doesn't do much beyond letting you run commands. Try this:
 
@@ -62,9 +60,7 @@ Let's try:
 
     $ vantage env
     VG_APP_DIR=...
-    VG_BINARY=/usr/local/vantage/vantage
     VG_VERBOSE=
-    VG_RUN_REQUIRED=
 
 Here you can see that vantage has completely changed the environment variables for the command that you ran. The only ones here are some of the default vantage "internal" variables.
 
@@ -85,6 +81,9 @@ Let's add a variable to the default environment (using another helper script):
 And see it appear in the env:
 
     $ vantage env
+    NAME=Alice
+    VG_APP_DIR=...
+    VG_VERBOSE=
 
 Let's create a new environment:
 
