@@ -1,24 +1,24 @@
 import sys
 
-import click
 import sh
+
 from vantage import utils
+from vantage.exceptions import VantageException
 
 
-@click.pass_context
-def shell(ctx, args):
-    utils.loquacious(f"Running '{ctx.command.name}' in shell")
-    utils.loquacious(f"  With args: {args}")
+def shell_cmd(env, cmd, *args):
+    utils.loquacious(f"Running system defined '{cmd}' inside env", env)
+    utils.loquacious(f"  With args: {args}", env)
     try:
-        command = sh.Command(ctx.command.name)
+        command = sh.Command(cmd)
         command(
             *args,
-            _env=ctx.obj,
-            _out=click.get_text_stream("stdout"),
-            _err=click.get_text_stream("stderr"),
+            _env=env,
+            _out=sys.stdout,
+            _err=sys.stderr,
         )
     except sh.ErrorReturnCode as erc:
-        utils.loquacious(f"  Exited with code {erc.exit_code}")
+        utils.loquacious(f"  Exited with code {erc.exit_code}", env)
         sys.exit(erc.exit_code)
     except sh.CommandNotFound:
-        raise click.ClickException(f"Command '{ctx.command.name}' not found")
+        raise VantageException(f"Command '{cmd}' not found")

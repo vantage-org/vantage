@@ -1,12 +1,15 @@
+import os
 import base64
 import binascii
 import io
 import json
 import tarfile
 import urllib.request
+from pathlib import Path
 
-import click
 import certifi
+
+from vantage.exceptions import VantageException
 
 
 def to_base64(value):
@@ -23,16 +26,9 @@ def from_base64(value):
     return value
 
 
-def loquacious(line, env=None):
-    try:
-        env = env or click.get_current_context().obj
-        if env is not None and env.get("VG_VERBOSE"):
-            click.echo(f"VG-LOG: {line}")
-    except RuntimeError:
-        # This happens when there's no active click context so we can't get the
-        # env. In this case we default to not printing the verbose logs.
-        # This situation happens when you're trying to autocomplete
-        pass
+def loquacious(line, env):
+    if env.get("VG_VERBOSE"):
+        print(f"VG-LOG: {line}")
 
 
 def load_env_from_file(path, ignore_missing=False):
@@ -47,7 +43,7 @@ def load_env_from_file(path, ignore_missing=False):
                     env[key.strip()] = value
     except FileNotFoundError:
         if not ignore_missing:
-            raise click.ClickException(f"The env file '{path}' does not exist")
+            raise VantageException(f"The env file '{path}' does not exist")
     return env
 
 
@@ -70,3 +66,19 @@ def download_tarball(url, path):
     archive = io.BytesIO(archive.read())
     tar = tarfile.open(fileobj=archive, mode="r:*")
     tar.extractall(path=path)
+
+
+def is_executable(path):
+    return path.is_file() and os.access(path, os.X_OK)
+
+
+def get_task_dir(env):
+    if env.get("VG_TASKS_DIR"):
+        return Path(env.get("VG_TASKS_DIR"))
+    return Path(env["VG_APP_DIR"]) / "tasks"
+
+
+def get_plugins_dir(env):
+    if env.get("VG_PLUGINS_DIR"):
+        return Path(env.get("VG_PLUGINS_DIR"))
+    return Path(env["VG_APP_DIR"]) / ".vg-plugins"

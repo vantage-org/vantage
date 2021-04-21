@@ -1,15 +1,19 @@
+import argparse
 from pathlib import Path
-
-import click
 
 from vantage import utils
 
 
-@click.command(name="__init")
-@click.pass_obj
-def init(env):
-    """Initialise the VG_APP_DIR with default vantage config"""
-    utils.loquacious("Running __init")
+parser = argparse.ArgumentParser(
+    prog="vantage __init",
+    description="Initialise a vantage project",
+    allow_abbrev=False,
+)
+
+
+def init_cmd(env, *args):
+    utils.loquacious("Running __init", env)
+    args = parser.parse_args(args)
     app_dir = Path(env["VG_APP_DIR"])
     vg_file = app_dir / ".vantage"
     if not vg_file.exists():

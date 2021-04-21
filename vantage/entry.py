@@ -1,90 +1,127 @@
+import argparse
 import os
 import sys
 from pathlib import Path
 
-import click
+from vantage import utils, exceptions
 
-from vantage import utils, task
-from vantage.env import env as env_cmd
-from vantage.init import init as init_cmd
-from vantage.plugins import plugins as plugins_cmd
-from vantage.shell import shell as shell_cmd
-from vantage.version import version as version_cmd
-
-CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-
-
-class VantageCLI(click.MultiCommand):
-    def list_commands(self, ctx):
-        # Invoke here to get the ctx populated
-        click.Command.invoke(self, ctx)
-        utils.loquacious("Listing commands...")
-        tasks = task.get_task_names(ctx.obj)
-        return list(tasks) + ["__env", "__init", "__plugins"]
-
-    def get_command(self, ctx, name):
-        # Invoke here to get the ctx populated
-        click.Command.invoke(self, ctx)
-        utils.loquacious("Getting single command")
-        # First try vantage builtins
-        if name == "__env":
-            return env_cmd
-        if name == "__init":
-            return init_cmd
-        if name == "__plugins":
-            return plugins_cmd
-        if name == "__version":
-            return version_cmd
-        # Then a project task file or an installed plugin task file
-        task_ = task.get_task(ctx.obj, name)
-        if task_:
-            return task_
-        # Fallback to shelling out
-        params = [click.Argument(("args",), nargs=-1, required=False)]
-        return click.Command(name, params=params, callback=shell_cmd)
+from vantage.builtin.env import env_cmd, parser as env_parser
+from vantage.builtin.init import init_cmd, parser as init_parser
+from vantage.builtin.plugins import plugins_cmd, parser as plugins_parser
+from vantage.builtin.tasks import list_tasks_cmd
+from vantage.builtin.version import version_cmd
+from vantage.shell import shell_cmd
+from vantage.task import execute_task_cmd
 
 
-@click.command(
-    cls=VantageCLI,
-    context_settings=CONTEXT_SETTINGS,
-    invoke_without_command=True,
+parser = argparse.ArgumentParser(
+    prog="vantage",
+    usage="vantage [-a PATH] [-e NAME ...] [-v KEY=[VALUE] ...] [--verbose] [-h] COMMAND...",
+    description="Run COMMAND inside a dynamic environment",
+    epilog="\n".join(
+        [
+            "builtin commands:",
+            f"  __env      {env_parser.description}",
+            f"  __init     {init_parser.description}",
+            f"  __plugins  {plugins_parser.description}",
+            "  __tasks    Lists all available tasks",
+            "  __version  Print current vantage version number",
+            "",
+            "See the GitHub repo for more details: https://github.com/vantage-org/vantage",
+        ]
+    ),
+    allow_abbrev=False,
+    add_help=False,
+    formatter_class=argparse.RawDescriptionHelpFormatter,
 )
-@click.option(
+parser.add_argument(
     "-a",
     "--app",
+    metavar="PATH",
     help="Set the app directory, the base dir from which every command is run",
 )
-@click.option("-e", "--env", multiple=True, help="Add an env file to the environment")
-@click.option(
+parser.add_argument(
+    "-e",
+    "--env",
+    metavar="NAME",
+    action="append",
+    help="Add an env file to the environment",
+)
+parser.add_argument(
     "-v",
     "--var",
-    multiple=True,
+    action="append",
     help="Add a single variable to the environment",
+    metavar="KEY[=VALUE]",
 )
-@click.option(
-    "--verbose",
-    is_flag=True,
-    default=False,
-    help="Print verbose debug messages to stdout",
+parser.add_argument(
+    "--verbose", action="store_true", help="Print verbose debug messages to stdout"
 )
-@click.pass_context
-def vantage(ctx, app=None, env=None, var=None, verbose=False):
-    """Run COMMAND inside a dynamic environment
+parser.add_argument(
+    "-h", "--help", action="store_true", help="Show this help message and exit"
+)
 
-    \b
-    See the GitHub repo for more details:
-    https://github.com/vantage-org/vantage"""
-    if ctx.obj is None:
-        env = env or tuple()
-        var = var or tuple()
-        app = find_app(app)
-        env_vars = get_env_vars(app, env, var)
-        env_vars.setdefault("VG_VERBOSE", "1" if verbose else "")
-        if env_vars["VG_VERBOSE"]:
-            utils.loquacious("Compiled ENV is:", env=env_vars)
-            for key, val in env_vars.items():
-                utils.loquacious(f"  {key}={val}", env=env_vars)
-        ctx.obj = env_vars
+
+def vantage():
+    try:
+        vg_args, other_args = split_vantage_args(sys.argv[1:])
+        vg_args = parser.parse_args(vg_args)
+
+        app = find_app(vg_args.app)
+        env = get_env_vars(app, vg_args.env or [], vg_args.var or [])
+        env.setdefault("VG_VERBOSE", "1" if vg_args.verbose else "")
+        if env["VG_VERBOSE"]:
+            utils.loquacious("Compiled ENV is:", env)
+            for key, val in env.items():
+                utils.loquacious(f"  {key}={val}", env)
+
+        if vg_args.help or len(other_args) == 0:
+            parser.print_help()
+            list_tasks_cmd(env)
+            sys.exit(0)
+
+        builtins = {
+            "__env": env_cmd,
+            "__init": init_cmd,
+            "__plugins": plugins_cmd,
+            "__tasks": list_tasks_cmd,
+            "__version": version_cmd,
+        }
+        builtin = builtins.get(other_args[0], None)
+        if builtin:
+            builtin(env, *other_args[1:])
+        else:
+            task_path, task_args = get_task_path(env, *other_args)
+            if task_path:
+                execute_task_cmd(env, task_path, *task_args)
+            else:
+                shell_cmd(env, *other_args)
+    except exceptions.VantageException as ve:
+        print(f"vantage: error: {ve.msg}", file=sys.stderr)
+        sys.exit(1)
+
+
+def split_vantage_args(all_args):
+    """Returns two lists of arguments; the first are args that should be used by
+    vantage itself, the second is a list of everything else."""
+    vg_args = []
+    append_next = False
+    for idx, arg in enumerate(all_args):
+        found_unknown = True
+        if append_next:
+            vg_args.append(arg)
+            append_next = False
+            found_unknown = False
+        if arg in ["-a", "--app", "-e", "--env", "-v", "--var"]:
+            vg_args.append(arg)
+            append_next = True
+            found_unknown = False
+        if arg in ["--verbose", "-h", "--help"]:
+            vg_args.append(arg)
+            found_unknown = False
+        if found_unknown:
+            return vg_args, all_args[idx:]
+    return vg_args, []
 
 
 def find_app(path=None):
@@ -92,7 +129,7 @@ def find_app(path=None):
         p = Path(path)
         if p.exists():
             return p.resolve()
-        raise click.ClickException(f"App directory '{p}' does not exist")
+        raise exceptions.VantageException(f"App directory '{path}' does not exist")
     cwd = p = Path(".").resolve()
     vg_file = p / ".vantage"
     while not vg_file.exists():
@@ -120,7 +157,7 @@ def get_env_vars(app, env, var):
         if not default_env.is_file() and env_dir:
             default_env = env_dir / env_vars["VG_DEFAULT_ENV"]
         if not default_env.is_file():
-            raise click.ClickException(
+            exceptions.VantageException(
                 f"The default env file '{env_vars['VG_DEFAULT_ENV']}' does not exist"
             )
         env_vars.update(utils.load_env_from_file(default_env))
@@ -133,24 +170,18 @@ def get_env_vars(app, env, var):
         env_vars["VG_ENV_FILE"] = str(path.resolve())
     for key, val in get_env_vars_from_var_options(var):
         env_vars[key] = val
-    env_vars["VG_BINARY"] = get_binary()
     if "VG_ENV_FILE" not in env_vars and default_env:
         env_vars["VG_ENV_FILE"] = str(default_env)
     return env_vars
-
-
-def get_binary():
-    if getattr(sys, "frozen", False):
-        return sys.executable
-    return os.path.abspath(__file__)
 
 
 def get_env_vars_from_var_options(var):
     for key_val in var:
         if "=" in key_val:
             key, val = key_val.split("=", 1)
+            key = key.strip()
         else:
-            key = key_val
+            key = key_val.strip()
             val = os.environ.get(key, "")
         val = utils.from_base64(val.strip())
         yield key, val
@@ -162,3 +193,47 @@ def find_env_dir(app, env):
     p = app / ".env"
     if p.is_dir():
         return p
+
+
+def get_task_path(env, name, *args):
+    plugins_dir = utils.get_plugins_dir(env)
+    if plugins_dir.is_dir():
+        task, args = get_task_from_dir(env, plugins_dir, name, *args)
+        if task:
+            return task, args
+
+    task_dir = utils.get_task_dir(env)
+    if task_dir.is_dir():
+        task, args = get_task_from_dir(env, task_dir, name, *args)
+        if task:
+            return task, args
+    return None, []
+
+
+def get_task_from_dir(env, dir_, name, *args):
+    utils.loquacious(f"Trying to find {name} in {dir_}", env)
+    task_path = dir_ / name
+
+    if utils.is_executable(task_path):
+        utils.loquacious(f"It's an executable script: {task_path}", env)
+        return task_path, args
+
+    for task_path in dir_.glob(f"{name}.*"):
+        if utils.is_executable(task_path):
+            utils.loquacious(
+                f"It's an executable script with a file ext: {task_path}", env
+            )
+            return task_path, args
+
+    if task_path.is_dir():
+        nested, nested_args = get_task_from_dir(env, task_path, name, *args)
+        if nested:
+            utils.loquacious(
+                f"It's an executable script inside a folder of the same name: {nested}",
+                env,
+            )
+            return nested, nested_args
+        utils.loquacious(f"It's a folder of other tasks: {task_path}", env)
+        return get_task_from_dir(env, task_path, *args)
+
+    return None, []

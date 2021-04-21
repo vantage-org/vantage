@@ -14,7 +14,6 @@ def workdir(tmpdir, request):
 
 @pytest.fixture
 def run(workdir, request):
-
     def wrapper():
         test_name = Path(request.fspath).stem.replace("test_", "")
         try:
@@ -24,6 +23,7 @@ def run(workdir, request):
             else:
                 res = sh.sh(f"{workdir}/run.sh", _cwd=workdir)
         except sh.ErrorReturnCode as erc:
+            print(erc)
             res = erc
         res.stdout_ = res.stdout.decode("utf-8").strip()
         res.stderr_ = res.stderr.decode("utf-8").strip()
@@ -49,7 +49,6 @@ def stderr(result):
 
 @pytest.fixture
 def get_file(tmpdir):
-
     def getter(path):
         f = Path(tmpdir) / "case" / path
         return f.read_text().strip()

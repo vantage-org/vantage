@@ -5,7 +5,7 @@ setup(
     version="3.0.3",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=["Click", "sh", "pyyaml", "certifi"],
+    install_requires=["sh", "pyyaml", "certifi"],
     entry_points="""
         [console_scripts]
         vantage=vantage.entry:vantage
