@@ -28,4 +28,4 @@ pyinstaller --noconfirm --clean --onedir --name vantage vantage/__main__.py
 
 cp -r dist "vantage-$VERSION-debian"
 cp install.sh README.md LICENSE "vantage-$VERSION-debian/"
-tar -cvzf "vantage-$VERSION-debian.tar.gz" -C "vantage-$VERSION-debian" .
+tar -cvzf "vantage-$VERSION-debian.tar.gz" "vantage-$VERSION-debian"

@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eu
 
+export VERSION=$(vg __version)
+
 echo "Building $VERSION"
 
 rm -rf venv-debian dist build

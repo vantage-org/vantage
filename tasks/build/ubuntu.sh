@@ -27,4 +27,4 @@ pyinstaller --noconfirm --clean --onedir --name vantage vantage/__main__.py
 
 cp -r dist "vantage-$VERSION-ubuntu"
 cp install.sh README.md LICENSE "vantage-$VERSION-ubuntu/"
-tar -cvzf "vantage-$VERSION-ubuntu.tar.gz" -C "vantage-$VERSION-ubuntu" .
+tar -cvzf "vantage-$VERSION-ubuntu.tar.gz" "vantage-$VERSION-ubuntu"

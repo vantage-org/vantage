@@ -16,4 +16,4 @@ pyinstaller --noconfirm --clean --onedir --name vantage vantage/__main__.py
 
 cp -r dist "vantage-$VERSION-macos"
 cp install.sh README.md LICENSE "vantage-$VERSION-macos/"
-tar -cvzf "vantage-$VERSION-macos.tar.gz" -C "vantage-$VERSION-macos" .
+tar -cvzf "vantage-$VERSION-macos.tar.gz" "vantage-$VERSION-macos"
