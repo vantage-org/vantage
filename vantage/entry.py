@@ -186,15 +186,15 @@ def find_env_dir(app, env):
 def get_task_path(env, name, *args):
     plugins_dir = utils.get_plugins_dir(env)
     if plugins_dir.is_dir():
-        task, args = get_task_from_dir(env, plugins_dir, name, *args)
+        task, task_args = get_task_from_dir(env, plugins_dir, name, *args)
         if task:
-            return task, args
+            return task, task_args
 
     task_dir = utils.get_task_dir(env)
     if task_dir.is_dir():
-        task, args = get_task_from_dir(env, task_dir, name, *args)
+        task, task_args = get_task_from_dir(env, task_dir, name, *args)
         if task:
-            return task, args
+            return task, task_args
     return None, []
 
 
