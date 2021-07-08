@@ -2,4 +2,4 @@
 # ---
 # help-text: Remove build artefacts
 # ---
-rm -rf build tests/tmp vantage.spec vantage-*/ dist
+rm -rf build tests/tmp vantage.spec vantage-*/ venv-*
