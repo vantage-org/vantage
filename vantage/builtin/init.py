@@ -1,3 +1,4 @@
+import os
 import argparse
 from pathlib import Path
 
@@ -15,6 +16,7 @@ def init_cmd(env, *args):
     utils.loquacious("Running __init", env)
     args = parser.parse_args(args)
     app_dir = Path(env["VG_APP_DIR"])
+
     vg_file = app_dir / ".vantage"
     if not vg_file.exists():
         with vg_file.open(mode="w") as fp:
@@ -22,7 +24,31 @@ def init_cmd(env, *args):
             fp.write(f"VG_PLUGINS_DIR={app_dir / '.vg-plugins'}\n")
             fp.write(f"VG_ENV_DIR={app_dir / '.env'}\n")
             fp.write("VG_DEFAULT_ENV=default\n")
+
     env_dir = app_dir / ".env"
     env_dir.mkdir(exist_ok=True)
+
     env_file = env_dir / "default"
     env_file.touch(exist_ok=True)
+
+    tasks_dir = app_dir / "tasks"
+    tasks_dir.mkdir(exist_ok=True)
+
+    bootstrap_task = tasks_dir / "bootstrap.sh"
+    if not bootstrap_task.exists():
+        with bootstrap_task.open(mode="w") as fp:
+            fp.write(
+                "/n".join(
+                    [
+                        "#!/bin/sh",
+                        "# ---",
+                        "# help-text: Bootstrap this project",
+                        "# ---",
+                        "",
+                        "set -eu",
+                        "",
+                        "# vg __plugins install pg",
+                    ]
+                )
+            )
+        os.chmod(bootstrap_task, 0o744)

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 
@@ -21,3 +22,13 @@ def test_creates_default_env(tmpdir, run):
     assert env_dir.is_dir()
     env_file = env_dir / "default"
     assert env_file.is_file()
+
+
+def test_creates_bootstrap_task(tmpdir, run):
+    run()
+    tmpdir = Path(tmpdir)
+    task_dir = tmpdir / "case" / "tasks"
+    assert task_dir.is_dir()
+    task_file = task_dir / "bootstrap.sh"
+    assert task_file.is_file()
+    assert os.access(task_file, os.X_OK)

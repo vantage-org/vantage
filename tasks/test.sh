@@ -8,8 +8,9 @@ set -e
     if [ ! -d venv ]; then
         python3.9 -m venv venv
         . venv/bin/activate
+        pip install -U pip
         pip install pytest
-        pip install . -e
+        pip install -e .
     else
         . venv/bin/activate
     fi
