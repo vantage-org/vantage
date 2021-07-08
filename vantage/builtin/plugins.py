@@ -49,7 +49,7 @@ def install(env, name):
         _, name = url.rsplit("/", 1)
         name, _ = name.split(".", 1)
     else:
-        url = utils.determine_github_latest_release(name)
+        url = utils.determine_github_latest_release(name)["browser_download_url"]
     utils.download_tarball(url, Path(env["VG_APP_DIR"]) / ".vg-plugins" / name)
 
 

@@ -56,7 +56,7 @@ def determine_github_latest_release(name):
     latest_release = json.load(latest_release)
     for asset in latest_release["assets"]:
         if name in asset["name"]:
-            return asset["browser_download_url"]
+            return asset
 
 
 def download_tarball(url, path):
