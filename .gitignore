@@ -1,6 +1,7 @@
 __pycache__
 /vantage.egg-info
 /venv
+/venv-*
 /bak
 /build
 .DS_Store

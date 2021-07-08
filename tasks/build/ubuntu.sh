@@ -8,23 +8,25 @@
 #   volume:
 #     - $VG_APP_DIR:/usr/src/app
 #   workdir: /usr/src/app
-# help-text: Build the vantage binary for Ubuntu 20.04
+# help-text: Build the vantage binary for Ubuntu 20.04 (inside a container)
 # ---
 set -eu
 
 echo "Building $VERSION for ubuntu"
 
-apt-get update
-apt-get install --assume-yes python3 python3-venv python3-pip
+rm -rf venv-ubuntu build/x86_64-unknown-linux-gnu
 
-python3 -m venv venv-ubuntu
+apt update
+apt install --assume-yes software-properties-common build-essential
+add-apt-repository ppa:deadsnakes/ppa
+apt install --assume-yes python3.9 python3.9-dev python3.9-venv
+python3.9 -m venv venv-ubuntu
 . venv-ubuntu/bin/activate
 pip install -U pip
-pip install -r requirements.txt
-pip install -e .
+pip install pyoxidizer==0.16.2
 
-pyinstaller --noconfirm --clean --onedir --name vantage vantage/__main__.py
+pyoxidizer build
 
-cp -r dist "vantage-$VERSION-ubuntu"
+cp -r build/x86_64-unknown-linux-gnu/debug/install "vantage-$VERSION-ubuntu"
 cp install.sh README.md LICENSE "vantage-$VERSION-ubuntu/"
 tar -cvzf "vantage-$VERSION-ubuntu.tar.gz" "vantage-$VERSION-ubuntu"

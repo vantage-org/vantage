@@ -6,14 +6,15 @@ set -eu
 
 echo "Building $VERSION for MacOS"
 
-python3 -m venv venv-macos
+rm -rf venv-macos build/x86_64-apple-darwin
+
+python3.9 -m venv venv-macos
 . venv-macos/bin/activate
 pip install -U pip
-pip install -r requirements.txt
-pip install -e .
+pip install pyoxidizer==0.16.2
 
-pyinstaller --noconfirm --clean --onedir --name vantage vantage/__main__.py
+pyoxidizer build
 
-cp -r dist "vantage-$VERSION-macos"
+cp -r build/x86_64-apple-darwin/debug/install "vantage-$VERSION-macos"
 cp install.sh README.md LICENSE "vantage-$VERSION-macos/"
 tar -cvzf "vantage-$VERSION-macos.tar.gz" "vantage-$VERSION-macos"
