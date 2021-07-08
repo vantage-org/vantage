@@ -3,10 +3,12 @@ import os
 from pathlib import Path
 
 import sh
-import yaml
+from ruamel.yaml import YAML
 
 from vantage import utils
 from vantage.exceptions import VantageException
+
+yaml = YAML(typ="safe")
 
 
 def execute_task_cmd(env, path, *args):
@@ -105,7 +107,7 @@ def load_meta(env, path):
             comment_marker = sep.replace("---", "")
             utils.loquacious(f"  Meta commented out using '{comment_marker}'", env)
             meta = meta.replace(f"\n{comment_marker}", "\n")
-            return yaml.load(meta, Loader=yaml.SafeLoader)
+            return yaml.load(meta)
 
 
 def update_env(env, meta):
