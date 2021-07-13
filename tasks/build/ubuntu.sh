@@ -27,6 +27,10 @@ pip install pyoxidizer==0.16.2
 
 pyoxidizer build
 
-cp -r build/x86_64-unknown-linux-gnu/debug/install "vantage-$VERSION-ubuntu"
-cp install.sh README.md LICENSE "vantage-$VERSION-ubuntu/"
+cp -r build/x86_64-unknown-linux-gnu/debug/install "build/vantage-$VERSION-ubuntu"
+cp install.sh README.md LICENSE "build/vantage-$VERSION-ubuntu/"
+
+cd build
 tar -cvzf "vantage-$VERSION-ubuntu.tar.gz" "vantage-$VERSION-ubuntu"
+
+rm -rf venv-ubuntu
