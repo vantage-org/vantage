@@ -10,11 +10,11 @@ def shell_cmd(env, cmd, *args):
     utils.loquacious(f"  With args: {args}", env)
 
     try:
-        cmd = utils.find_executable(cmd)
-        if cmd is None:
+        cmd_path = utils.find_executable(cmd)
+        if cmd_path is None:
             raise FileNotFoundError()
         completed = subprocess.run(
-            [cmd, *args],
+            [cmd_path, *args],
             env=env,
             stdin=sys.stdin,
             stdout=sys.stdout,
