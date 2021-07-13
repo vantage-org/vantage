@@ -1,79 +1,77 @@
 import sys
 import os
+import subprocess
 from pathlib import Path
 
-import sh
-from ruamel.yaml import YAML
+import strictyaml
 
 from vantage import utils
 from vantage.exceptions import VantageException
 
-yaml = YAML(typ="safe")
-
 
 def execute_task_cmd(env, path, *args):
     utils.loquacious(f"Running task in {path}", env)
+    utils.loquacious(f"  PATH is: {os.environ.get('PATH')}", env)
     utils.loquacious(f"  With args: {args}", env)
     meta = load_meta(env, path)
     env = update_env(env, meta)
-    try:
-        if meta.get("image"):
-            utils.loquacious("  Spinning up docker image", env)
-            utils.loquacious(f"  Path is: {os.environ.get('PATH')}", env)
-            cmd = sh.Command("docker")
-            image = meta.get("image")
-            run_args = [
-                "run",
-                "--volume",
-                f"{str(path)}:/vg-task",
-                "--label",
-                "vantage",
-                "--label",
-                "vantage-task",
-            ]
-            if isinstance(image, dict):
-                tag = insert_env_vals(image.pop("tag"), env, args)
-                for k, v in image.items():
-                    if isinstance(v, list):
-                        for w in v:
-                            run_args += [
-                                f"--{k}",
-                                insert_env_vals(w, env, args),
-                            ]
-                    elif isinstance(v, bool):
-                        if v:
-                            run_args += [f"--{k}"]
-                    else:
-                        run_args += [f"--{k}", insert_env_vals(v, env, args)]
-                if "VG_DOCKER_NETWORK" in env and "network" not in image:
-                    network = env["VG_DOCKER_NETWORK"]
-                    ensure_network(network)
-                    run_args += ["--network", network]
-            else:
-                tag = image
-                run_args += ["--rm"]
-            for e in env.keys():
-                run_args += ["--env", e]
-            run_args += [tag, "/vg-task"]
-            args = run_args + list(args)
+    if meta.get("image"):
+        utils.loquacious("  Spinning up docker image", env)
+        image = meta.get("image")
+        docker = utils.find_executable("docker")
+        if docker is None:
+            raise VantageException(f"Couldn't find docker in PATH")
+        run_args = [
+            docker,
+            "run",
+            "--volume",
+            f"{str(path)}:/vg-task",
+            "--label",
+            "vantage",
+            "--label",
+            "vantage-task",
+        ]
+        if isinstance(image, dict):
+            tag = insert_env_vals(image.pop("tag"), env, args)
+            for k, v in image.items():
+                if isinstance(v, list):
+                    for w in v:
+                        run_args += [
+                            f"--{k}",
+                            insert_env_vals(w, env, args),
+                        ]
+                elif v == "true":
+                    run_args += [f"--{k}"]
+                else:
+                    run_args += [f"--{k}", insert_env_vals(v, env, args)]
+            if "VG_DOCKER_NETWORK" in env and "network" not in image:
+                network = env["VG_DOCKER_NETWORK"]
+                ensure_network(network)
+                run_args += ["--network", network]
         else:
-            utils.loquacious("  Passing task over to sh", env)
-            env["PATH"] = os.environ.get("PATH", "")
-            cmd = sh.Command(str(path))
-        utils.loquacious(f"Running command {cmd} with args {args}", env)
-        cmd(
-            *args,
-            _in=sys.stdin,
-            _out=sys.stdout,
-            _err=sys.stderr,
-            _env=env,
-            _cwd=env["VG_APP_DIR"],
-        )
-    except sh.ErrorReturnCode as erc:
-        utils.loquacious(
-            f"  Something went wrong, returned exit code {erc.exit_code}", env
-        )
-        return sys.exit(erc.exit_code)
+            tag = image
+            run_args += ["--rm"]
+        for e in env.keys():
+            run_args += ["--env", e]
+        run_args += [tag, "/vg-task", *args]
+        run_subprocess(*run_args, env=env)
+    else:
+        utils.loquacious("  Passing task over to subprocess", env)
+        env["PATH"] = os.environ.get("PATH", "")
+        run_subprocess(str(path), *args, env=env)
+
+
+def run_subprocess(*args, env):
+    utils.loquacious(f"Running command {args[0]} with args {args[1:]}", env)
+    completed = subprocess.run(
+        list(args),
+        env=env,
+        stdin=sys.stdin,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+    )
+    utils.loquacious(f"  Exited with code {completed.returncode}", env)
+    sys.exit(completed.returncode)
 
 
 def insert_env_vals(haystack, env=None, args=None):
@@ -107,7 +105,7 @@ def load_meta(env, path):
             comment_marker = sep.replace("---", "")
             utils.loquacious(f"  Meta commented out using '{comment_marker}'", env)
             meta = meta.replace(f"\n{comment_marker}", "\n")
-            return yaml.load(meta)
+            return strictyaml.load(meta).data
 
 
 def update_env(env, meta):
@@ -151,4 +149,6 @@ def get_flag(env, yml, default):
 
 
 def ensure_network(name):
-    sh.docker("network", "create", name, _ok_code=[0, 1])
+    subprocess.run(
+        ["docker", "network", "create", name],
+    )

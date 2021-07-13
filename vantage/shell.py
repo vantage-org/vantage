@@ -1,6 +1,5 @@
 import sys
-
-import sh
+import subprocess
 
 from vantage import utils
 from vantage.exceptions import VantageException
@@ -9,16 +8,19 @@ from vantage.exceptions import VantageException
 def shell_cmd(env, cmd, *args):
     utils.loquacious(f"Running system defined '{cmd}' inside env", env)
     utils.loquacious(f"  With args: {args}", env)
+
     try:
-        command = sh.Command(cmd)
-        command(
-            *args,
-            _env=env,
-            _out=sys.stdout,
-            _err=sys.stderr,
+        cmd = utils.find_executable(cmd)
+        if cmd is None:
+            raise FileNotFoundError()
+        completed = subprocess.run(
+            [cmd, *args],
+            env=env,
+            stdin=sys.stdin,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
         )
-    except sh.ErrorReturnCode as erc:
-        utils.loquacious(f"  Exited with code {erc.exit_code}", env)
-        sys.exit(erc.exit_code)
-    except sh.CommandNotFound:
+        utils.loquacious(f"  Exited with code {completed.returncode}", env)
+        sys.exit(completed.returncode)
+    except FileNotFoundError:
         raise VantageException(f"Command '{cmd}' not found")

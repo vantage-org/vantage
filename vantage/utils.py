@@ -62,7 +62,6 @@ def determine_github_latest_release(name):
 def download_tarball(url, path):
     certs = certifi.where()
     archive = urllib.request.urlopen(url, cafile=certs)
-    archive = urllib.request.urlopen(url, cafile=certs)
     archive = io.BytesIO(archive.read())
     tar = tarfile.open(fileobj=archive, mode="r:*")
     tar.extractall(path=path)
@@ -94,3 +93,12 @@ def get_env_from_key_val_list(key_vals):
             val = os.environ.get(key, "")
         val = from_base64(val.strip())
         yield key, val
+
+
+def find_executable(name):
+    paths = os.environ.get("PATH", "").split(os.pathsep)
+    for path in paths:
+        path = Path(path)
+        candidate = path.resolve() / name
+        if is_executable(candidate):
+            return candidate

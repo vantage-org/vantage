@@ -16,7 +16,7 @@ def make_exe(dist):
     )
 
     for resource in exe.pip_install([CWD]):
-        resource.add_location = "filesystem-relative:lib"
+        resource.add_location = "in-memory"
         exe.add_python_resource(resource)
 
     return exe
