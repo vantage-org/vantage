@@ -46,7 +46,6 @@ def execute_task_cmd(env, path, *args):
                     run_args += [f"--{k}", insert_env_vals(v, env, args)]
             if "VG_DOCKER_NETWORK" in env and "network" not in image:
                 network = env["VG_DOCKER_NETWORK"]
-                ensure_network(network)
                 run_args += ["--network", network]
         else:
             tag = image
@@ -146,9 +145,3 @@ def get_flag(env, yml, default):
             return default
         return yml
     return env
-
-
-def ensure_network(name):
-    subprocess.run(
-        ["docker", "network", "create", name],
-    )
