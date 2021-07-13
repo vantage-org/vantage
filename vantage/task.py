@@ -53,11 +53,11 @@ def execute_task_cmd(env, path, *args):
         for e in env.keys():
             run_args += ["--env", e]
         run_args += [tag, "/vg-task", *args]
-        run_subprocess(*run_args, env=env)
-    else:
-        utils.loquacious("  Passing task over to subprocess", env)
-        env["PATH"] = os.environ.get("PATH", "")
-        run_subprocess(str(path), *args, env=env)
+        return run_subprocess(*run_args, env=env)
+
+    utils.loquacious("  Passing task over to subprocess", env)
+    env["PATH"] = os.environ.get("PATH", "")
+    return run_subprocess(str(path), *args, env=env)
 
 
 def run_subprocess(*args, env):
@@ -70,7 +70,7 @@ def run_subprocess(*args, env):
         stderr=sys.stderr,
     )
     utils.loquacious(f"  Exited with code {completed.returncode}", env)
-    sys.exit(completed.returncode)
+    return completed.returncode
 
 
 def insert_env_vals(haystack, env=None, args=None):

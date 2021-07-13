@@ -63,6 +63,7 @@ parser.add_argument(
 
 
 def vantage():
+    exit_code = 0
     try:
         vg_args, other_args = split_vantage_args(sys.argv[1:])
         vg_args = parser.parse_args(vg_args)
@@ -78,27 +79,28 @@ def vantage():
         if vg_args.help or len(other_args) == 0:
             parser.print_help()
             list_tasks_cmd(env)
-            sys.exit(0)
-
-        builtins = {
-            "__env": env_cmd,
-            "__init": init_cmd,
-            "__plugins": plugins_cmd,
-            "__tasks": list_tasks_cmd,
-            "__version": version_cmd,
-        }
-        builtin = builtins.get(other_args[0], None)
-        if builtin:
-            builtin(env, *other_args[1:])
         else:
-            task_path, task_args = get_task_path(env, *other_args)
-            if task_path:
-                execute_task_cmd(env, task_path, *task_args)
+            builtins = {
+                "__env": env_cmd,
+                "__init": init_cmd,
+                "__plugins": plugins_cmd,
+                "__tasks": list_tasks_cmd,
+                "__version": version_cmd,
+            }
+            builtin = builtins.get(other_args[0], None)
+            if builtin:
+                builtin(env, *other_args[1:])
             else:
-                shell_cmd(env, *other_args)
+                task_path, task_args = get_task_path(env, *other_args)
+                if task_path:
+                    exit_code = execute_task_cmd(env, task_path, *task_args)
+                else:
+                    exit_code = shell_cmd(env, *other_args)
     except exceptions.VantageException as ve:
         print(f"vantage: error: {ve.msg}", file=sys.stderr)
-        sys.exit(1)
+        exit_code = 1
+    finally:
+        sys.exit(exit_code)
 
 
 def split_vantage_args(all_args):

@@ -21,6 +21,6 @@ def shell_cmd(env, cmd, *args):
             stderr=sys.stderr,
         )
         utils.loquacious(f"  Exited with code {completed.returncode}", env)
-        sys.exit(completed.returncode)
+        return completed.returncode
     except FileNotFoundError:
         raise VantageException(f"Command '{cmd}' not found")
