@@ -1,3 +1,5 @@
+"""The __env builtin provides commands that help read and write your env files."""
+from typing import List
 import sys
 import argparse
 from pathlib import Path
@@ -29,7 +31,13 @@ parser.add_argument(
 )
 
 
-def env_cmd(env, *args):
+def env_cmd(env:dict, *args: List[str]):
+    """
+
+    Arguments:
+         env: The environment we run this command inside
+         *args: The arguments passed from the command line
+    """
     utils.loquacious("Running __env", env)
     args = parser.parse_args(args)
 
@@ -54,7 +62,17 @@ def env_cmd(env, *args):
             raise VantageException(f"No value found for '{args.key_val}'")
 
 
-def write_env_value(env, key, value, base64=False):
+def write_env_value(env:dict, key:str, value:str, base64:bool=False):
+    """Writes a key=value line into an environment file.
+
+    Arguments:
+        env: The environment we run this command inside
+        key: The name of the new env variable (usually in ALL CAPS)
+        value: The value of the new env variable
+        base64: Set to true if you want to base64 encode the value before writing it. Useful if you're dealing with
+            values that contain unexpected characters (like new lines, or emoji). vantage will automatically decode
+            these values when reading them back in.
+    """
     try:
         env_file = Path(env["VG_ENV_FILE"])
         utils.loquacious(f"  Adding {key}={value} to {env_file}", env)

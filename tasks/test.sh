@@ -5,14 +5,14 @@
 set -e
 (
     cd "$VG_APP_DIR"
-    if [ ! -d venv ]; then
-        python3.9 -m venv venv
-        . venv/bin/activate
+    if [ ! -d venv-test ]; then
+        python3.9 -m venv venv-test
+        . venv-test/bin/activate
         pip install -U pip
         pip install pytest
         pip install -e .
     else
-        . venv/bin/activate
+        . venv-test/bin/activate
     fi
     cd tests/cases
     pytest --basetemp="$VG_APP_DIR/tests/tmp" "$@"

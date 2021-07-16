@@ -1,0 +1,23 @@
+site_name: vantage
+site_url: https://example.com/
+repo_name: vantage-org/vantage
+repo_url: https://github.com/vantage-org/vantage
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - toc.integrate
+  icon:
+    repo: fontawesome/brands/github
+plugins:
+  - search:
+      lang: en
+  - mkdocstrings:
+      default_handler: python
+      watch:
+        - vantage
+  - git-revision-date
+copyright: Copyright &copy; 2015 - 2021 William Mayor
