@@ -19,7 +19,7 @@ rm -rf venv-linux build/x86_64-unknown-linux-gnu
 python -m venv venv-linux
 . venv-linux/bin/activate
 pip install -U pip
-pip install pyoxidizer==0.16.2
+pip install pyoxidizer==0.18.0
 
 pyoxidizer build
 

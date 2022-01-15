@@ -13,7 +13,7 @@ rm -rf venv-macos build/x86_64-apple-darwin
 python3.9 -m venv venv-macos
 . venv-macos/bin/activate
 pip install -U pip
-pip install pyoxidizer==0.16.2
+pip install pyoxidizer==0.18.0
 
 pyoxidizer build
 
