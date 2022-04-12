@@ -30,7 +30,11 @@ def execute_task_cmd(env, path, *args):
             "vantage",
             "--label",
             "vantage-task",
+            "--rm",
+            "--interactive",
         ]
+        if sys.stdin.isatty():
+            run_args.append("--tty")
         if isinstance(image, dict):
             tag = insert_env_vals(image.pop("tag"), env, args)
             for k, v in image.items():
@@ -49,7 +53,6 @@ def execute_task_cmd(env, path, *args):
                 run_args += ["--network", network]
         else:
             tag = image
-            run_args += ["--rm"]
         for e in env.keys():
             run_args += ["--env", e]
         run_args += [tag, "/vg-task", *args]
