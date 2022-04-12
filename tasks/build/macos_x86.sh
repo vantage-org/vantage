@@ -16,8 +16,10 @@ pip install -U pip
 pip install pyoxidizer==0.18.0
 
 pyoxidizer build
+# pyoxidizer analyze build/x86_64-apple-darwin/debug/install/vantage
 
 cp -r build/x86_64-apple-darwin/debug/install "build/vantage-$VERSION-macos"
+chmod +x "build/vantage-$VERSION-macos/vantage"
 cp install.sh README.md LICENSE "build/vantage-$VERSION-macos/"
 
 cd build

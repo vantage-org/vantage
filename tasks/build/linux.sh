@@ -21,6 +21,7 @@ pip install pyoxidizer==0.18.0
 pyoxidizer build
 
 cp -r build/x86_64-unknown-linux-gnu/debug/install "build/vantage-$VERSION-linux"
+chmod +x "build/vantage-$VERSION-linux/vantage"
 cp install.sh README.md LICENSE "build/vantage-$VERSION-linux/"
 
 cd build

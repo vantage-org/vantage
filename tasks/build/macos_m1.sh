@@ -1,6 +1,6 @@
 #!/bin/sh
 # ---
-# help-text: Build the vantage binary for M1 chip Macs. Must be run on a MacOS host.
+# help-text: Build the vantage binary for M1 chip Macs. Must be run on a MacOS M1 host.
 # ---
 set -eu
 
@@ -16,8 +16,10 @@ pip install -U pip
 pip install pyoxidizer==0.18.0
 
 pyoxidizer build
+# pyoxidizer analyze build/aarch64-apple-darwin/debug/install/vantage
 
 cp -r build/aarch64-apple-darwin/debug/install "build/vantage-$VERSION-macos-m1"
+chmod +x "build/vantage-$VERSION-macos-m1/vantage"
 cp install.sh README.md LICENSE "build/vantage-$VERSION-macos-m1/"
 
 cd build
