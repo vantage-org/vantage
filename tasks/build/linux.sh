@@ -1,11 +1,6 @@
 #!/bin/sh
 # ---
-# image:
-#   tag: "python:3.9"
-#   volume:
-#     - $VG_APP_DIR:/usr/src/app
-#   workdir: /usr/src/app
-# help-text: Build the vantage binary for Linux (inside a container)
+# help-text: Build the vantage binary for Linux. Must be run on a Linux host.
 # ---
 set -eu
 
