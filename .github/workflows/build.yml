@@ -30,24 +30,24 @@ jobs:
           name: vantage-3.4.0-linux.tar.gz
           path: build/vantage-3.4.0-linux.tar.gz
   
-  build-mac-intel:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+  # build-mac-intel:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Install vantage
-        run: |
-          wget https://github.com/vantage-org/vantage/releases/download/v3.3.0/vantage-3.3.0-macos.tar.gz
-          tar xzf vantage-3.3.0-macos.tar.gz
-          cd vantage-3.3.0-macos
-          sudo ./install.sh
+  #     - name: Install vantage
+  #       run: |
+  #         wget https://github.com/vantage-org/vantage/releases/download/v3.3.0/vantage-3.3.0-macos.tar.gz
+  #         tar xzf vantage-3.3.0-macos.tar.gz
+  #         cd vantage-3.3.0-macos
+  #         sudo ./install.sh
       
-      - name: Build
-        run: vg -v VERSION=3.4.0 build macos_x86
+  #     - name: Build
+  #       run: vg -v VERSION=3.4.0 build macos_x86
       
-      - uses: actions/upload-artifact@v3
-        with:
-          name: vantage-3.4.0-macos.tar.gz
-          path: build/vantage-3.4.0-macos.tar.gz
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: vantage-3.4.0-macos.tar.gz
+  #         path: build/vantage-3.4.0-macos.tar.gz
