@@ -37,7 +37,7 @@ def make_msi(exe):
         # The name of your application.
         "vantage",
         # The version of your application.
-        "3.2.0",
+        "3.4.0",
         # The author/manufacturer of your application.
         "William Mayor"
     )
