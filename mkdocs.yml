@@ -20,4 +20,4 @@ plugins:
       watch:
         - vantage
   - git-revision-date
-copyright: Copyright &copy; 2015 - 2021 William Mayor
+copyright: Copyright &copy; 2015 - 2022 William Mayor
