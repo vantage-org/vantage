@@ -9,7 +9,7 @@ set -e
         python3.9 -m venv venv-test
         . venv-test/bin/activate
         pip install -U pip
-        pip install pytest
+        pip install pytest sh
         pip install -e .
     else
         . venv-test/bin/activate
