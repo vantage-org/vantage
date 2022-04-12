@@ -2,9 +2,6 @@
 # ---
 # image:
 #   tag: "python:3.9"
-#   rm: true
-#   tty: true
-#   interactive: true
 #   volume:
 #     - $VG_APP_DIR:/usr/src/app
 #   workdir: /usr/src/app

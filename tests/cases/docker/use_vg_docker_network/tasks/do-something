@@ -3,7 +3,6 @@
 # image:
 #   tag: busybox
 #   name: use_vg_docker_network
-#   rm: false
-#   detach: true
 # ---
 echo "inside network!"
+sleep 2
