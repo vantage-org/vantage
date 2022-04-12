@@ -20,7 +20,7 @@ jobs:
           wget https://github.com/vantage-org/vantage/releases/download/v3.3.0/vantage-3.3.0-linux.tar.gz
           tar xzf vantage-3.3.0-linux.tar.gz
           cd vantage-3.3.0-linux
-          sudo ./install.sh
+          ./install.sh
       
       - name: Build
         run: vg -v VERSION=3.4.0 build linux
