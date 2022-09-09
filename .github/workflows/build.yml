@@ -36,24 +36,30 @@ jobs:
           name: vantage-3.4.1-linux.tar.gz
           path: build/vantage-3.4.1-linux.tar.gz
   
-  # build-mac-intel:
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 0
+  build-mac-intel:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-  #     - name: Install vantage
-  #       run: |
-  #         wget https://github.com/vantage-org/vantage/releases/download/v3.3.0/vantage-3.3.0-macos.tar.gz
-  #         tar xzf vantage-3.3.0-macos.tar.gz
-  #         cd vantage-3.3.0-macos
-  #         sudo ./install.sh
+      - name: Build
+        run: |
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install -U pip
+          pip install pyoxidizer==0.18.0
+
+          pyoxidizer build
+
+          cp -r build/x86_64-apple-darwin/debug/install "build/vantage-3.4.1-macos"
+          chmod +x "build/vantage-3.4.1-macos/vantage"
+          cp install.sh README.md LICENSE "build/vantage-3.4.1-macos/"
+
+          cd build
+          tar -cvzf "vantage-3.4.1-macos.tar.gz" "vantage-3.4.1-macos"
       
-  #     - name: Build
-  #       run: vg -v VERSION=3.4.0 build macos_x86
-      
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         name: vantage-3.4.0-macos.tar.gz
-  #         path: build/vantage-3.4.0-macos.tar.gz
+      - uses: actions/upload-artifact@v3
+        with:
+          name: vantage-3.4.1-macos.tar.gz
+          path: build/vantage-3.4.1-macos.tar.gz
